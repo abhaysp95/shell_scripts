@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
 
+# From https://github.com/LukeSmithxyz
 # Usage:
 # `$0`: Ask for recording type via dmenu
 # `$0 screencast`: Record both audio and screen
