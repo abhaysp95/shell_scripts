@@ -1,0 +1,34 @@
+#!/usr/bin/env sh
+
+set -e
+
+dl_link="https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage"
+dl_file="/home/raytracer/Downloads/Programs/nvim"
+destination="/usr/bin"
+
+echo "Checking if previous file exists in download path"
+if [ -f "${dl_file}" ]; then
+	echo "Removing File & donwloading new"
+	rm "${dl_file}"
+else
+	echo "File doesn't exist, downloading now"
+fi
+
+wget --quiet --show-progress "${dl_link}" --output-document "${dl_file}" \
+	&& echo "Download Completed"
+# used set -e, so no need to put an exit here if download fails
+
+echo "Making file executable with 755"
+chmod 755 "${dl_file}"
+
+echo "Making owner as root"
+chown root:root "${dl_file}"
+
+echo "Putting file in destination"
+if [ -f "$(which nvim)" ]; then
+	rm "${destination}/nvim"
+fi
+
+mv "${dl_file}" "${destination}"
+
+echo "Update Complete!"
