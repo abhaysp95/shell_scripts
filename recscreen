@@ -22,7 +22,7 @@ killrec() {
 	kill -15 "$recpid"
 	rm -f /tmp/recscreenpid
 	sleep 3
-	kill -9 "$recpid"	# just to be sure
+	kill -9 "$recpid"    # just to be sure
 }
 
 moverec() {
