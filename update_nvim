@@ -3,13 +3,15 @@
 set -e
 
 dl_link="https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage"
-dl_file="/home/raytracer/Downloads/Programs/nvim"
+dl_file="/home/${USER}/Downloads/Programs/nvim"
 destination="/usr/bin"
 
 if [ $(id -u) -ne 0 ]; then
 	printf "Run this script as root\nExiting Now!\n"
 	exit 1
 fi
+
+mkdir -p "${HOME}/Downloads/Programs"
 
 echo "Checking if previous file exists in download path"
 if [ -f "${dl_file}" ]; then
