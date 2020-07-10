@@ -32,6 +32,8 @@ while [ "${img_count}" -gt 1 ]; do
 	img_count=$(( img_count - 1 ))
 done
 
+# leave unsignificant numbers
+# if doesn't compares floating numbers
 total_size="${total_size%%.*}"
 
 # print in human readable format
