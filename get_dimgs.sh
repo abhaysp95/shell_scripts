@@ -1,13 +1,13 @@
 #!/bin/bash
 
+echo "Getting total size of all docker containers..."
+
 # don't have to run command every time
 file_saved="/tmp/current_docker_images"
 docker images > "${file_saved}"
 
 # get images count
 img_count="$(wc -l "${file_saved}" | cut -d' ' -f 1)"
-
-echo "Getting total size of all docker containers..."
 
 total_size=0
 while [ "${img_count}" -gt 1 ]; do
