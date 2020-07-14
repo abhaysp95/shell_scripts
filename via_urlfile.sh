@@ -29,7 +29,7 @@ while IFS= read -r line; do
 		echo "Download Complete"
 	fi
 	echo
-	if [ "${lines}" -ge 1 ]; then
+	if [ "${lines}" -gt 1 ]; then
 		echo "Downloading Next File"
 		lines=$(( lines - 1 ))
 	fi
