@@ -2,7 +2,6 @@
 
 echo "Getting total size of all docker containers..."
 
-# don't have to run command every time
 file_saved="/tmp/current_docker_images"
 docker images > "${file_saved}"
 
@@ -49,3 +48,5 @@ if [ "${total_size}" -ge 1024 ]; then
 else
 	printf "%.2f KB\n" "${total_size}"
 fi
+
+rm /tmp/current_docker_images  # delete the file as it's not needed
