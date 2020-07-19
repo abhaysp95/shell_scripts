@@ -26,21 +26,25 @@ elif [ "$1" = "--update" ]; then
 	bookmarks_gen.py --update
 	exit 0
 elif [ "$1" = "--rofi" ]; then
-	selected_url=$(echo "${urls[@]}" | rofi -dmenu -p "Select URL: ")
-	if [ -n "$2" ]; then
+	selected_url=$(echo "${urls[@]}" | rofi \
+		-dmenu \
+		-i \
+		-matching fuzzy \
+		-p "Select URL: ")
+	if [ -n "${selected_url}" ]; then
 		open_url "${selected_url}"
 	else
 		notify-send -t 2500 "No Title selected, nothing will open"
 	fi
-elif [ "$1" = "--fzf" ] || [ "$1" = "" ]; then
+elif [ "$1" = "--fzf" ] || [ -z "$1" ]; then
 	selected_url=$(echo "${urls[@]}" | fzf \
-		--prompt "Select URL: " \
+		--prompt "Select Title: " \
 		--border sharp \
 		--height 55%)
-	if [ -n "$2" ]; then
+	if [ -n "${selected_url}" ]; then
 		open_url "${selected_url}"
 	else
-		echo "Please, select a Title to open a URL"
+		echo "Please, select a Title"
 	fi
 else
 	echo "ERROR!"
