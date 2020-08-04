@@ -1,10 +1,13 @@
 #!/usr/bin/env sh
 
+
+# if logname doesn't work for you, try who
+
 set -e
 
 dl_link="https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage"
-dl_file="/home/${USER}/Downloads/Programs/nvim"
-destination="/usr/bin"
+dl_file="/home/$(logname)/Downloads/Programs/nvim"
+destination="/usr/local/bin"
 
 if [ $(id -u) -ne 0 ]; then
 	printf "Run this script as root\nExiting Now!\n"
