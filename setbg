@@ -1,10 +1,50 @@
 #!/usr/bin/env sh
 
 # set wallpaper
+save_file="$HOME/.config/wall.png"
+pic_dir="$HOME/Pictures/bgwallpapers"
 
-[ -f "$*" ] && cp "$*" ~/.config/wall.png && notify-send -i "$HOME/.config/wall.png" "Wallpaper changed"
+# convert to grayscale with balanced rgb
+function convert_to_gray() {
+	notify-send -t 1000 "grayscale conversion started"
+	convert "$*" \
+	\( -clone 0 -channel RG -separate +channel -evaluate-sequence mean \) \
+	\( -clone 0 -channel GB -separate +channel -evaluate-sequence mean \) \
+	-delete 0 -evaluate-sequence mean "${save_file}"
+	notify-send -t 1000 "conversion finished"
+}
 
-[ -d "$1" ] && cp "$(find "$1" -iname "*.jpg" -o -iname "*.jpeg" -o -iname "*.png" -type f | shuf -n 1)" ~/.config/wall.png && notify-send -i "$HOME/.config/wall.png" "Random Wallpaper Choosen"
+# if file given, then look no further
+[ -f "$1" ] && \
+	cp "$*" "${save_file}" && \
+	notify-send -t 2500 -i "${save_file}" "Wallpaper changed"
+
+# if given, but not a file
+if [ -n "$1" ]; then
+	# if first argument is not --gray, then it should be a directory
+	if [ "$1" != "--gray" ] && [ -z "$2" ]; then
+		[ -d "$1" ] && \
+			cp "$(fd --type f -u -e jpg -e jpeg -e png . "$1" | shuf -n 1)" "${save_file}" && \
+			notify-send -t 2500 -i "${save_file}" "Random wallpaper choosen from specified directory"
+	# if first argument is --gray
+	elif [ -n "$2" ]; then
+		# if second argument is a file
+		[ -f "$2" ] && convert_to_gray "$2" && \
+		notify-send -t 2500 -i "${save_file}" "Wallpaper set after gray conversion"
+		# if second argument is a directory
+		[ -d "$2" ] && \
+			convert_to_gray "$(fd --type f -u -e jpg -e jpeg -e png . "$2" | shuf -n 1)" && \
+			notify-send -t 2500 -i "${save_file}" "Random wallpaper set after gray conversion from given directory"
+	# if first argument is --gray but there's no second argument, then chose random
+	elif [ "$1" = "--gray" ] && [ -z "$2" ]; then
+		convert_to_gray "$(fd --type f -e jpg -e jpeg -e png -u . "${pic_dir}" | shuf -n 1)"
+		notify-send -t 2500 -i "${save_file}" "Random wallpaper set after gray conversion"
+	fi
+else
+	cp "$(fd --type f -u -e jpg -e jpeg -e png . ${pic_dir} | shuf -n 1)" "${save_file}"
+	notify-send -t 2500 -i "${save_file}" "Random Wallpaper set"
+fi
+
 
 # getting proper screen size
 # convert ~/.config/wall.png -resize 1366x768 ~/.config/wall.png
