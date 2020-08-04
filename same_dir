@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+
+cur_dir=$(pwd)
+termite -d "${cur_dir}" &
+disown
