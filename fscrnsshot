@@ -4,7 +4,7 @@
 
 pgrep picom && kill $(pidof picom)
 
-scrot -q 100 -l style=solid -s
+scrot -q 100 -s -f -l style=solid,width=2
 
 latest_file="$(fd -d 1 -u scrot -e png "$HOME")"
 
