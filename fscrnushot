@@ -10,7 +10,7 @@ dir="$(basename "$(echo "$latest_file" | awk -F- '{print $1 "-" $2}')")"
 
 save_path="$HOME/Pictures/Screenshots/$dir"
 
-[ ! -d "$save_path" ] && mkd -p "$save_path"
+[ ! -d "$save_path" ] && mkdir -p "$save_path"
 
 message="$(printf "Window type\nScreenshot Captured")"
 
