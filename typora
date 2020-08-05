@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+# script to open typora
+# check it out at https://typora.io/#
+
+tpid=0
+cd "$HOME/Downloads/Programs/typora/bin/Typora-linux-x64"
+
+./Typora &
+
+# opening takes some time so,
+#while [ "${#tpid}" -eq 0 ]; do
+	#sleep 1
+	#tpid=$(pidof Typora)
+	#echo "${tpid}"
+	#if [ "${#tpid}" -ne 0 ]; then
+		#break
+	#fi
+#done
+# above things were just for some trial(no use)
+
+notify-send -t 2500 "Typora Opened"
+
+exit 0
