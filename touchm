@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# create multiple files
+
+file_name=$1
+
+while IFS= read -r file; do
+	echo "File \"$file\" created"
+	touch "$file"
+done < <( cat $1 )
