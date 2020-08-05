@@ -1,8 +1,25 @@
 #!/usr/bin/env sh
 
+# write a help menu
+
 # set wallpaper
 save_file="$HOME/.config/wall.png"
 pic_dir="$HOME/Pictures/bgwallpapers"
+
+# help menu
+function get_help() {
+	printf "Usage:\tsetbg [--gray] [Options]\n\n"
+	printf "\t[no arg]:\tIf no arg then sets random wallpaper from specified directory in script\n"
+	printf "\t[filename]:\tIf first arg is image then set it as Wallpaper\n"
+	printf "\t[directory]:\tIf first arg is directory then choose an image randomly\n"
+	printf "\t\t\tand set as wallpaper\n"
+	printf "\t--gray:\t\tIf provided arg with no file or directory name then\n"
+	printf "\t\t\tchooses a random wallpaper from specified directory in script\n"
+	printf "\t--gray [path]:\tSame as above options but changes image to grayscale\n"
+	printf "\t--help:\t\tShow help\n"
+	printf "\nChange <pic_dir> variable in script to the desired path of wallpaper's directory\n"
+	exit 0
+}
 
 # convert to grayscale with balanced rgb
 function convert_to_gray() {
@@ -13,6 +30,8 @@ function convert_to_gray() {
 	-delete 0 -evaluate-sequence mean "${save_file}"
 	notify-send -t 1000 "conversion finished"
 }
+
+[ "$1" == "--help" ] && get_help
 
 # if file given, then look no further
 [ -f "$1" ] && \
