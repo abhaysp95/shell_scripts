@@ -84,7 +84,7 @@ elif [ $1 = "--specific" ]; then
 	disown %picom
 	notify-send "started picom"
 	post_operation
-elif [ $1 = "--wait" ]; then
+elif [ $1 = "--delay" ]; then
 	change_dir
 	scrot -q "${quality}" -d "${wait_time}"
 	stype="Delay Type"
