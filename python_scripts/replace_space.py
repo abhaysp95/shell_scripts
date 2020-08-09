@@ -19,7 +19,7 @@ def replace_space_recursive(diris='.'):
             filename = filename.replace(' ', '_')
             new_filename = "{}{}".format(filename, ext)
             pfilepath = ('/'.join(ppath for ppath in content.path.split('/')[:-1])) + '/' + new_filename
-            # os.rename(content.path, pfilepath)
+            os.rename(content.path, pfilepath)
             print(f"{content.path} -> {pfilepath}")
 
 def replace_space(diris='.'):
@@ -31,7 +31,7 @@ def replace_space(diris='.'):
                 filename = filename.replace(' ', '_')
                 new_filename = "{}{}".format(filename, ext)
                 pfilepath = ('/'.join(ppath for ppath in content.path.split('/')[:-1])) + '/' + new_filename
-                # os.rename(content.path, pfilepath)
+                os.rename(content.path, pfilepath)
                 print(f"{content.path} -> {pfilepath}")
     except NotADirectoryError:
         print("Directory not Found")
@@ -44,7 +44,7 @@ def replace_space(diris='.'):
             pfilepath = ('/'.join(ppath for ppath in diris.split('/')[:-1])) + '/' + new_filename
         else:
             pfilepath = new_filename
-        # os.rename(diris, pfilepath)
+        os.rename(diris, pfilepath)
         print(f"{diris} -> {pfilepath}")
 
 
