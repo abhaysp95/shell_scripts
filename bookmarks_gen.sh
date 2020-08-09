@@ -16,7 +16,7 @@ open_url() {
 	else
 		nohup "$BROWSER" "${got_url}" 2>&1 > /dev/null &
 	fi
-	notify-send -t 2000 "Opening Url:" "${selected_url}"
+	notify-send -t 2000 -i "~/.cache/notify-icons/bookmark.png" "Opening Url:" "${selected_url}"
 }
 
 if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
@@ -34,7 +34,7 @@ elif [ "$1" = "--rofi" ]; then
 	if [ -n "${selected_url}" ]; then
 		open_url "${selected_url}"
 	else
-		notify-send -t 2500 "No Title selected, nothing will open"
+		notify-send -t 2500 -i "~/.cache/notify-icons/bookmark.png" "No Title selected, nothing will open"
 	fi
 elif [ "$1" = "--fzf" ] || [ -z "$1" ]; then
 	selected_url=$(echo "${urls[@]}" | fzf \
