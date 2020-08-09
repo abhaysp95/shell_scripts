@@ -11,9 +11,9 @@ status=`xset -q | grep 'DPMS is' | awk '{print $3 }'`
 if [ "$status" = 'Enabled' ]; then
 	xset -dpms && \
 		xset s off && \
-			dunstify -t 2000 'Screen suspend is disabled.'
+			notify-send -t 8500 -i "$HOME/.cache/notify-icons/coffee.png" 'Screen suspend is disabled.'
 else
 	xset +dpms && \
 		xset s on && \
-			dunstify -t 2000 'Screen suspend is enabled.'
+			dunstify -t 8500 -i "$HOME/.cache/notify-icons/coffee.png" 'Screen suspend is enabled.'
 fi
