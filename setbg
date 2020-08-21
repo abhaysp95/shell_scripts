@@ -2,6 +2,11 @@
 
 # write a help menu
 
+
+# TODO:
+# add parameter so that if setbg is set in .xprofile etc. it doesn't change the wallpaper everytime on startup of system
+
+
 # set wallpaper
 save_file="$HOME/.config/wall.png"
 pic_dir="$HOME/Pictures/bgwallpapers"
@@ -16,6 +21,8 @@ function get_help() {
 	printf "\t--gray:\t\tIf provided arg with no file or directory name then\n"
 	printf "\t\t\tchooses a random wallpaper from specified directory in script\n"
 	printf "\t--gray [path]:\tSame as above options but changes image to grayscale\n"
+	printf "\t--autochange:\tput script with this parameter on startup utility\n"
+	printf "\t\t\tand it'll change your wallpaper everytime on startup\n"
 	printf "\t--help:\t\tShow help\n"
 	printf "\nChange <pic_dir> variable in script to the desired path of wallpaper's directory\n"
 	exit 0
@@ -58,10 +65,12 @@ if [ -n "$1" ]; then
 	elif [ "$1" = "--gray" ] && [ -z "$2" ]; then
 		convert_to_gray "$(fd --type f -e jpg -e jpeg -e png -u . "${pic_dir}" | shuf -n 1)"
 		notify-send -t 2500 -i "${save_file}" "Random wallpaper set after gray conversion"
+	elif [ "$1" = "--autochange" ]; then
+		cp "$(fd --type f -u -e jpg -e jpeg -e png . ${pic_dir} | shuf -n 1)" "${save_file}"
+		notify-send -t 2500 -i "${save_file}" "Random Wallpaper set"
 	fi
 else
-	cp "$(fd --type f -u -e jpg -e jpeg -e png . ${pic_dir} | shuf -n 1)" "${save_file}"
-	notify-send -t 2500 -i "${save_file}" "Random Wallpaper set"
+	echo "No argument provided. Check help(setbg --help)"
 fi
 
 
