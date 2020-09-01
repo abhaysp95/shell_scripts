@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 # write a help menu
 
@@ -8,8 +8,8 @@
 
 
 # set wallpaper
-save_file="$HOME/.config/wall.png"
-pic_dir="$HOME/Pictures/bgwallpapers"
+save_file="/home/$(logname)/.config/wall.png"
+pic_dir="/home/$(logname)/Pictures/bgwallpapers"
 
 # help menu
 function get_help() {
@@ -38,7 +38,7 @@ function convert_to_gray() {
 	notify-send -t 1000 "conversion finished"
 }
 
-[ "$1" == "--help" ] && get_help
+[ "$1" = "--help" ] && get_help
 
 # if file given, then look no further
 [ -f "$1" ] && \
@@ -47,13 +47,8 @@ function convert_to_gray() {
 
 # if given, but not a file
 if [ -n "$1" ]; then
-	# if first argument is not --gray, then it should be a directory
-	if [ "$1" != "--gray" ] && [ -z "$2" ]; then
-		[ -d "$1" ] && \
-			cp "$(fd --type f -u -e jpg -e jpeg -e png . "$1" | shuf -n 1)" "${save_file}" && \
-			notify-send -t 2500 -i "${save_file}" "Random wallpaper choosen from specified directory"
 	# if first argument is --gray
-	elif [ -n "$2" ]; then
+	if [ -n "$2" ]; then
 		# if second argument is a file
 		[ -f "$2" ] && convert_to_gray "$2" && \
 		notify-send -t 2500 -i "${save_file}" "Wallpaper set after gray conversion"
@@ -65,9 +60,29 @@ if [ -n "$1" ]; then
 	elif [ "$1" = "--gray" ] && [ -z "$2" ]; then
 		convert_to_gray "$(fd --type f -e jpg -e jpeg -e png -u . "${pic_dir}" | shuf -n 1)"
 		notify-send -t 2500 -i "${save_file}" "Random wallpaper set after gray conversion"
-	elif [ "$1" = "--autochange" ]; then
+	elif [ "$1" = "--daemonize" ]; then
+		trap '' INT
+		cd /home/"$(logname)"/.cache/temp || exit 0
+		shift
+		while true; do
+			#cp "$(fd --type f -u -e jpg -e jpeg -e png . "${pic_dir}" | shuf -n 1)" "${save_file}"
+			#notify-send -t 2500 -i "${save_file}" "Random Wallpaper set"
+			setbg -a
+			nitrogen --set-zoom-fill ~/.config/wall.png
+			sleep 30
+		done
+		exit 0
+		nohup setsid "$0" --daemonize 2>/home/"$(logname)"/.cache/temp/chwall.err >/home/"$(logname)"/.cache/temp/chwall.log
+	elif [ "$1" = "-a" ] || [ "$1" = "--autochange" ]; then
 		cp "$(fd --type f -u -e jpg -e jpeg -e png . ${pic_dir} | shuf -n 1)" "${save_file}"
 		notify-send -t 2500 -i "${save_file}" "Random Wallpaper set"
+	# if first argument is not --gray, then it should be a directory
+	elif [ "$1" != "--gray" ] && [ -z "$2" ]; then
+		[ -d "$1" ] && \
+			cp "$(fd --type f -u -e jpg -e jpeg -e png . "$1" | shuf -n 1)" "${save_file}" && \
+			notify-send -t 2500 -i "${save_file}" "Random wallpaper choosen from specified directory" || echo "Wrong argument provided. Check help(setbg --help)"
+	else
+		echo "Wrong argument provided. Check help(setbg --help)"
 	fi
 else
 	echo "No argument provided. Check help(setbg --help)"
