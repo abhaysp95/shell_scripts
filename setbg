@@ -10,21 +10,24 @@
 # set wallpaper
 save_file="/home/$(logname)/.config/wall.png"
 pic_dir="/home/$(logname)/Pictures/bgwallpapers"
+time_to_sleep="600"
 
 # help menu
 function get_help() {
-	printf "Usage:\tsetbg [--gray] [Options]\n\n"
-	printf "\t[no arg]:\tIf no arg then sets random wallpaper from specified directory in script\n"
-	printf "\t[filename]:\tIf first arg is image then set it as Wallpaper\n"
-	printf "\t[directory]:\tIf first arg is directory then choose an image randomly\n"
-	printf "\t\t\tand set as wallpaper\n"
-	printf "\t--gray:\t\tIf provided arg with no file or directory name then\n"
-	printf "\t\t\tchooses a random wallpaper from specified directory in script\n"
-	printf "\t--gray [path]:\tSame as above options but changes image to grayscale\n"
-	printf "\t--autochange:\tput script with this parameter on startup utility\n"
-	printf "\t\t\tand it'll change your wallpaper everytime on startup\n"
-	printf "\t--help:\t\tShow help\n"
+	printf "Usage:\tsetbg [--gray] [Options]\n\n\n"
+	printf "\t[no arg]:\t\tIf no arg then sets random wallpaper from specified directory in script\n\n"
+	printf "\t[filename]:\t\tIf first arg is image then set it as Wallpaper\n\n"
+	printf "\t[directory]:\t\tIf first arg is directory then choose an image randomly\n"
+	printf "\t\t\t\tand set as wallpaper\n\n"
+	printf "\t--gray:\t\t\tIf provided arg with no file or directory name then\n"
+	printf "\t\t\t\tchooses a random wallpaper from specified directory in script\n\n"
+	printf "\t--gray [path]:\t\tSame as above options but changes image to grayscale\n\n"
+	printf "\t--autochange, -a:\tput script with this parameter on startup utility\n"
+	printf "\t\t\t\tand it'll change your wallpaper everytime on startup\n\n"
+	printf "\t--daemonize yes:\tmakes the script set random wallpaper\n\n"
+	printf "\t--help:\t\t\tShow help\n\n"
 	printf "\nChange <pic_dir> variable in script to the desired path of wallpaper's directory\n"
+	printf "Change <time_to_sleep> variable provided on top of script according to you\n\n"
 	exit 0
 }
 
@@ -48,7 +51,7 @@ function convert_to_gray() {
 # if given, but not a file
 if [ -n "$1" ]; then
 	# if first argument is --gray
-	if [ -n "$2" ]; then
+	if [ -n "$2" ] && [ "$1" != "--daemonize" ]; then
 		# if second argument is a file
 		[ -f "$2" ] && convert_to_gray "$2" && \
 		notify-send -t 2500 -i "${save_file}" "Wallpaper set after gray conversion"
@@ -61,18 +64,28 @@ if [ -n "$1" ]; then
 		convert_to_gray "$(fd --type f -e jpg -e jpeg -e png -u . "${pic_dir}" | shuf -n 1)"
 		notify-send -t 2500 -i "${save_file}" "Random wallpaper set after gray conversion"
 	elif [ "$1" = "--daemonize" ]; then
-		trap '' INT
-		cd /home/"$(logname)"/.cache/temp || exit 0
-		shift
-		while true; do
-			#cp "$(fd --type f -u -e jpg -e jpeg -e png . "${pic_dir}" | shuf -n 1)" "${save_file}"
-			#notify-send -t 2500 -i "${save_file}" "Random Wallpaper set"
-			setbg -a
-			nitrogen --set-zoom-fill ~/.config/wall.png
-			sleep 30
-		done
-		exit 0
-		nohup setsid "$0" --daemonize 2>/home/"$(logname)"/.cache/temp/chwall.err >/home/"$(logname)"/.cache/temp/chwall.log
+		if [ -n "$2" ]; then
+			flag="$2"
+			if [ "${flag}" = "yes" ]; then
+				flag="no"
+			else
+				flag="yes"
+			fi
+			if [ "${flag}" = "yes" ]; then
+				trap '' INT
+				cd /home/"$(logname)"/.cache/temp || exit 0
+				shift
+				while true; do
+					cp "$(fd --type f -u -e jpg -e jpeg -e png . "${pic_dir}" | shuf -n 1)" "${save_file}"
+					notify-send -t 2500 -i "${save_file}" "Random Wallpaper set"
+					#setbg -a
+					nitrogen --set-zoom-fill ~/.config/wall.png
+					sleep "${time_to_sleep}"
+				done
+				exit 0
+			fi
+			nohup setsid "$0" --daemonize no 2>/home/"$(logname)"/.cache/temp/chwall.err >/home/"$(logname)"/.cache/temp/chwall.log &
+		fi
 	elif [ "$1" = "-a" ] || [ "$1" = "--autochange" ]; then
 		cp "$(fd --type f -u -e jpg -e jpeg -e png . ${pic_dir} | shuf -n 1)" "${save_file}"
 		notify-send -t 2500 -i "${save_file}" "Random Wallpaper set"
