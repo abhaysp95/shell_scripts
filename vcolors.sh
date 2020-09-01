@@ -1,36 +1,68 @@
 #!/usr/bin/env bash
 
+# TODO:
+# thing of to make this root unaffected
+
 # get the theme in file
 theme_file="/tmp/vim-colorschemes"
-vim_colors_file="${HOME}/.config/nvim/modules/color_settings.vim"
+prev_theme_name="/tmp/vim-prev-theme"
+vim_colors_file="/home/$(logname)/.config/nvim/modules/color_settings.vim"
+# vim_colors_file="${HOME}/.cache/temp/sh_files/.vimrc"
+
+PS3="Select the file: "
+
+function gen_file() {
+	[ -f "${theme_file}" ] && rm "${theme_file}"
+	nvim -esc \
+		"put=getcompletion('', 'color') \
+		|put=globpath('~/.config/nvim/plugged/*/colors', '*.vim', 0, 1) \
+		|execute('%s/.*\/\([^/]*\).vim*$/\1/')" "${theme_file}" -c wq
+	echo "Theme file created"
+}
 
 # update the file with latest colorschemes
+touch "${prev_theme_name}"
+SELECTED_THEME_NAME=$(cat "${prev_theme_name}")
 function change_colorschme() {
 	[ -f "${theme_file}" ] && rm "${theme_file}"
 
 	# get the current colorscheme
 	theme_in_file=$(grep -o "^colorscheme\s[-_a-zA-Z0-9]\+$" "${vim_colors_file}" | cut -d' ' -f 2)
-	echo "Your current colorscheme is ${theme_in_file}"
+	echo "Your current nvim colorscheme is ${theme_in_file}"
 
-	sleep 0.1 && echo "Choose new colorscheme: "
+	sleep 0.05
 
 	# put the theme names in the file
 	nvim -esc \
 		"put=getcompletion('', 'color') \
 		|put=globpath('~/.config/nvim/plugged/*/colors', '*.vim', 0, 1) \
 		|execute('%s/.*\/\([^/]*\).vim*$/\1/')" "${theme_file}" -c wq
-	scheme_name=$(cat "${theme_file}" \
-		| fzf \
-			--prompt "Select theme name: " \
-			--border sharp \
-			--height 45%)
+	if [ -n $(echo "${PATH}" | grep -io fzf) ]; then
+		scheme_name=$(cat "${theme_file}" \
+			| fzf \
+				--prompt "Select theme name: " \
+				--border sharp \
+				--height 45%)
+	else
+		scheme_names=($(cat "${theme_file}" | sed 's/\n/ /g'))
+		select scheme_name in "${scheme_names[@]}"; do
+			echo "Selected theme for vim: ${scheme_name}"
+			break
+		done
+	fi
 	if [ "${scheme_name}" != "${theme_in_file}" ]; then
-		sed -i -e "s/^\(colorscheme\s\)[-_[:alpha:]]\+$/\1${scheme_name}/g" "${vim_colors_file}"
-		theme_in_file=$(grep -o "^colorscheme\s[-_a-zA-Z0-9]\+$" "${vim_colors_file}" | cut -d' ' -f 2)
-		echo "New colorscheme set to ${theme_in_file}"
+		if [ -z "${scheme_name}" ]; then
+			echo "No colorscheme choosen"
+		else
+			sed -i -e "s/^\(colorscheme\s\)[-_[:alpha:]]\+$/\1${scheme_name}/g" "${vim_colors_file}"
+			theme_in_file=$(grep -o "^colorscheme\s[-_a-zA-Z0-9]\+$" "${vim_colors_file}" | cut -d' ' -f 2)
+			echo "New colorscheme set to ${theme_in_file}"
+		fi
 	else
 		echo "${scheme_name} is already set as your default colorscheme for n/vim"
 	fi
+	echo "${scheme_name}" > "${prev_theme_name}"
+	SELECTED_THEME_NAME="${scheme_name}"
 }
 
 function set_background() {
@@ -52,6 +84,7 @@ Usage: vcolor.sh [arguments]
 	-bg, --background	changes the background between light and dark
 	-c, --colorscheme	shows fzf menu containing installed colorschemes to Choose
 				colorscheme from it
+	--gen	generate file with installed themes of n/vim to use with other scripts
 Note: if no argument is provided then it'll be default to changing colorscheme
 
 EOH
@@ -60,6 +93,9 @@ EOH
 case "$1" in
 	--help|-h) get_help ;;
 	-bg|--background) set_background $2 ;;
+	--gen) gen_file ;;
 	-c|--colorscheme|'') change_colorschme ;;
 	*) printf "Invalid option\tTry: --help\n" ;;
 esac
+
+export SELECTED_THEME_NAME
