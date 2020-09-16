@@ -18,7 +18,7 @@ xresources_theme_path="/home/$(logname)/.config/xresources_colors/"
 dunst_config="/home/$(logname)/.config/dunst/dunstrc"
 rofi_config="/home/$(logname)/.config/rofi/config.rasi"
 bspwm_config="/home/$(logname)/.config/bspwm/bspwmrc"
-dmenu_config="/home/$(logname)/Downloads/git-materials/dmenu_mybuild/config.h"
+dmenu_config="/home/$(logname)/Downloads/git-materials/my_repos/dmenu_mybuild/config.h"
 zathura_config="/home/$(logname)/.config/zathura/zathurarc"
 
 PS3="Select the file: "
@@ -123,6 +123,21 @@ function change_colorscheme_xresources() {
 		fi
 	else
 		echo "Selection not found in the folder ${termite_theme_path}"
+	fi
+
+
+	# restart the polybar
+	pid=$(pidof polybar)
+	count=$(echo "${pid}" | cut -d' ' -f 1)
+
+	if [ -n "${pid}" ] && [ "${count}" -gt 1 ]; then
+		for one_pid in ${pid}; do
+			kill "${one_pid}"
+		done
+		~/.config/polybar/launch.sh &
+	elif [ -n "${pid}" ] && [ "${count}" -eq 1 ]; then
+		kill "${pid}"
+		~/.config/polybar/launch.sh &
 	fi
 }
 
