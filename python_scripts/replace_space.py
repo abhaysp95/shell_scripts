@@ -8,6 +8,10 @@ import os
 import sys
 
 
+# TODO:
+# add support for using wildcard(*)
+
+
 def replace_space_recursive(diris='.'):
     '''replace space with underscore'''
     for content in os.scandir(diris):
@@ -23,6 +27,7 @@ def replace_space_recursive(diris='.'):
             print(f"{content.path} -> {pfilepath}")
 
 def replace_space(diris='.'):
+    """replace space non-recursively"""
     try:
         for content in os.scandir(diris):
             if os.path.isfile(content):
