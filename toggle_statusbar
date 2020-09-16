@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+# for bspwm and polybar
+
+dec_padding=6
+inc_padding=12
+
+pid=$(pidof polybar)
+count=$(echo "${pid}" | cut -d' ' -f 1)
+
+
+function dec_bsmwm_padding() {
+	#echo "in dec: ${dec_padding}"
+	bspc config top_padding "${dec_padding}"
+	bspc config bottom_padding "${dec_padding}"
+	notify-send -t 2500 "Toggled StatusBar"
+}
+
+function inc_bsmwm_padding() {
+	#echo "in inc: ${inc_padding}"
+	bspc config top_padding "${inc_padding}"
+	bspc config bottom_padding "${inc_padding}"
+	notify-send -t 2500 "Toggled StatusBar"
+}
+
+# if pid found perform operation accordingly
+if [ -n "${pid}" ] && [ "${count}" -gt 1 ]; then
+	for one_pid in ${pid}; do
+		kill "${one_pid}"
+	done
+	dec_bsmwm_padding
+elif [ -n "${pid}" ] && [ "${count}" -eq 1 ]; then
+	kill "${pid}"
+	dec_bsmwm_padding
+else
+	~/.config/polybar/launch.sh &
+	inc_bsmwm_padding
+fi
