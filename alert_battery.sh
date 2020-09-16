@@ -6,6 +6,9 @@
 # check for the notification id, so new notification should replace the old one
 # instead of opening a new one
 
+# TODO:
+# add the functionality to detect and tell if machine is running hot
+
 bsfile="$HOME/.cache/temp/bsfile"
 if [ ! -f "${bsfile}" ]; then
 	touch "$bsfile"
