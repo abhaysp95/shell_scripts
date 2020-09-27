@@ -43,7 +43,9 @@ do
 
     echo "$toprint"
 
+	status=$(mpc | awk 'NR==2 {print $1}' | cut -d'[' -f2 | cut -d']' -f1)
+
     dunstify -a "music_change" -t 3000 -r "${musicMsgId}" \
 		-i ~/.cache/notify-icons/music-note.png \
-		"Current Song" "$(printf "%s\n%s" "${toprint}" "$(getProgressString.sh 50 "" "—" ${cur_len})")"
+		"Current Song" "$(printf "%s\n%s\n%s" "${toprint}" "<b>Status:</b> ${status}" "$(getProgressString.sh 50 "" "—" ${cur_len})")"
 done
