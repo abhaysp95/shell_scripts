@@ -2,6 +2,11 @@
 
 #form="\n<b>Artist:</b>\t<span color='##a1b56c'>%artist%</span>\n<b>Album:</b>\t<span color='##6a9fb5'>%album%</span>\n<b>Title:</b><span color='##ac4142'>%title%</span>"
 
+# TODO:
+
+# add progress time beside progress bar, with real time change in finished seconds
+# a idea can be to check the change in title
+
 musicMsgId="991051"
 
 #function songLength() {
