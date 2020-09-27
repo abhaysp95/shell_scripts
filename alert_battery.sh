@@ -9,6 +9,8 @@
 # TODO:
 # add the functionality to detect and tell if machine is running hot
 
+batteryMsgId="991052"
+
 bsfile="$HOME/.cache/temp/bsfile"
 if [ ! -f "${bsfile}" ]; then
 	touch "$bsfile"
@@ -37,13 +39,19 @@ function general_status() {
 		fi
 		if [ ${status_bat} = "Discharging" ]; then
 			echo "Battery is now Discharging"
-			notify-send -t 7500 -i "$HOME/.cache/notify-icons/battery_disconnected.png" "Battery is now ${status_bat}" "Current level: ${capacity}"
+			dunstify -a "batteryStat" -r "${batteryMsgId}" \
+				-t 7500 -i "$HOME/.cache/notify-icons/battery_disconnected.png" \
+				"Battery is now ${status_bat}" "Current level: ${capacity}"
 		elif [ "${status_bat}" = "Charging" ]; then
 			echo "Battery is now Charging"
-			notify-send -t 7500 -i "$HOME/.cache/notify-icons/battery_charging.png" "Battery is now ${status_bat}" "Current level: ${capacity}"
+			dunstify -a "batteryStat" -r "${batteryMsgId}" \
+				-t 7500 -i "$HOME/.cache/notify-icons/battery_charging.png" \
+				"Battery is now ${status_bat}" "Current level: ${capacity}"
 		elif [ "${status_bat}" = "Full" ]; then
 			echo "Battery is ${status_bat}"
-			notify-send -t 7500 -i "$HOME/.cache/notify-icons/battery_charging.png" "Battery is now ${status_bat}" "Current level: ${capacity}"
+			dunstify -a "batteryStat" -r "${batteryMsgId}" \
+				-t 7500 -i "$HOME/.cache/notify-icons/battery_charging.png" \
+				"Battery is now ${status_bat}" "Current level: ${capacity}"
 		fi
 	fi
 }
@@ -55,7 +63,9 @@ function critical_status() {
 	fi
 	if [ "${capacity}" -le "${crit_stat}" ] && [ "${status_bat}" = "Discharging" ]; then
 		# replace notification with charging one, so that sleep doesn't effect it's showing
-		notify-send --urgency=critical -t 10000 -i "$HOME/.cache/notify-icons/battery_low.png" "Battery level, Please plug the charger" "Current Battery-level: ${capacity}%"
+		dunstify --urgency=critical -a "batteryStat" -r "${batteryMsgId}" \
+			-t 10000 -i "$HOME/.cache/notify-icons/battery_low.png" \
+			"Battery level, Please plug the charger" "Current Battery-level: ${capacity}%"
 		count=$(cut -d' ' -f 1 ${bsfile})
 		while true; do
 			if [ "${status_bat}" != "Charging" ]; then
