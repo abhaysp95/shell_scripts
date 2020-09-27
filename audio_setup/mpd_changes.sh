@@ -2,10 +2,22 @@
 
 #form="\n<b>Artist:</b>\t<span color='##a1b56c'>%artist%</span>\n<b>Album:</b>\t<span color='##6a9fb5'>%album%</span>\n<b>Title:</b><span color='##ac4142'>%title%</span>"
 
+musicMsgId="991051"
+
+#function songLength() {
+	#total_length=$(mpc | awk 'NR==2 {print $3}' | cut -d'/' -f2)
+	#mins=$(echo "${total_length}" | cut -d':' -f1)
+	#secs=$(echo "${total_length}" | cut -d':' -f2)
+	#total_secs=$(("${mins}" * 60 + ${secs}))
+	#echo "${total_secs}"
+#}
 
 while true
 do
     mpc idle player
+
+	#tot_len="$(songLength)"
+	cur_len="$(mpc | awk 'NR==2 {print $4}' | cut -d'(' -f2 | cut -d')' -f1 | cut -d'%' -f1)"
 
     if [ -z "$(mpc current -f %album%)" ] && [ -z "$(mpc current -f %artist%)" ] \
 	&& [ -z "$(mpc current -f %title%)" ]
@@ -26,5 +38,7 @@ do
 
     echo "$toprint"
 
-    dunstify -a MPD -t 3000 -r 1337 -i ~/.cache/notify-icons/music-note.png "Current Song" "$toprint"
+    dunstify -a "music_change" -t 3000 -r "${musicMsgId}" \
+		-i ~/.cache/notify-icons/music-note.png \
+		"Current Song" "$(printf "%s\n%s" "${toprint}" "$(getProgressString.sh 50 "" "—" ${cur_len})")"
 done
