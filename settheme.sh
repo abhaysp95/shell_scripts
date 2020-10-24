@@ -80,7 +80,7 @@ function change_colorscheme_terminal() {
 		if [ -n "${selected_file}" ]; then
 			if [ -f "${termite_theme_path}/${selected_file}" ]; then
 				echo "Changing colorscheme ${selected_file}"
-				cat "${termite_config}/base.yml" "${termite_theme_path}/${selected_file}" > "${termite_config}/test_termite.yml"
+				cat "${termite_config}/base-config" "${termite_theme_path}/${selected_file}" > "${termite_config}/config"
 				echo "Changed successfully"
 			else
 				echo "Selected file not found, or not selected an option"
