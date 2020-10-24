@@ -12,18 +12,20 @@
 # set wallpaper
 save_file="/home/$(logname)/.config/wall.png"
 pic_dir="/home/$(logname)/Pictures/bgwallpapers"
+cur_wallname="/home/$(logname)/.config/wallname.txt"
 time_to_sleep="21600"  # 6 hours
 
 # help menu
 function get_help() {
 	printf "Usage:\tsetbg [--gray] [Options]\n\n"
-	printf "\t[no arg]:\t\tIf no arg then sets random wallpaper from specified directory in script\n"
+	printf "\t[no arg]:\t\tNothing will happen(exit with a warning)\n"
 	printf "\t[filename]:\t\tIf first arg is image then set it as Wallpaper\n"
 	printf "\t[directory]:\t\tIf first arg is directory then choose an image randomly\n"
 	printf "\t\t\t\tand set as wallpaper\n"
 	printf "\t--gray:\t\t\tIf provided arg with no file or directory name then\n"
 	printf "\t\t\t\tchooses a random wallpaper from specified directory in script\n"
 	printf "\t--gray [path]:\t\tSame as above options but changes image to grayscale\n"
+	printf "\t--gray -c:\t\tSet current set wallpaper in grayscale mode\n"
 	printf "\t--autochange, -a:\tPut script with this parameter on startup utility\n"
 	printf "\t\t\t\tand it'll change your wallpaper everytime on startup\n"
 	printf "\t--daemonize yes:\tMakes the script set random wallpaper\n"
@@ -51,7 +53,7 @@ function convert_to_gray() {
 }
 
 function write_name() {
-	printf "%s" "$1" > ~/.config/wallname.txt
+	printf "%s" "$1" > ${cur_wallname}
 }
 
 [ "$1" = "--help" ] && get_help
@@ -64,7 +66,7 @@ function write_name() {
 # if given, but not a file
 if [ -n "$1" ]; then
 	# if first argument is --gray
-	if [ -n "$2" ] && [ "$1" != "--daemonize" ]; then
+	if [ -n "$2" ] && [ "$1" != "--daemonize" ] && [ "$1" != "--gray" ]; then
 		# if second argument is a file
 		[ -f "$2" ] && convert_to_gray "$2" && \
 		notify-send -t 2500 -i "${save_file}" "Wallpaper set after gray conversion"
@@ -73,9 +75,21 @@ if [ -n "$1" ]; then
 			convert_to_gray "$(fd --type f -u -e jpg -e jpeg -e png . "$2" | shuf -n 1)" && \
 			notify-send -t 2500 -i "${save_file}" "Random wallpaper set after gray conversion from given directory"
 	# if first argument is --gray but there's no second argument, then chose random
-	elif [ "$1" = "--gray" ] && [ -z "$2" ]; then
-		convert_to_gray "$(fd --type f -e jpg -e jpeg -e png -u . "${pic_dir}" | shuf -n 1)"
-		notify-send -t 2500 -i "${save_file}" "Random wallpaper set after gray conversion"
+	elif [ "$1" = "--gray" ]; then
+		echo "inside --gray"
+		if [ -z "$2" ]; then
+			echo "inside if"
+			convert_to_gray "$(fd --type f -e jpg -e jpeg -e png -u . "${pic_dir}" | shuf -n 1)"
+			notify-send -t 2500 -i "${save_file}" "Random wallpaper set after gray conversion"
+		elif [ "$2" = "-c" ] || [ "$2" = "--current" ]; then
+			echo "right place"
+			if [ -f "${cur_wallname}" ]; then
+				echo "inside right place"
+				convert_to_gray $(cat "${cur_wallname}")
+			else
+				echo "no file exists named: ${cur_wallname}"
+			fi
+		fi
 	# daemnization part of script
 	elif [ "$1" = "--daemonize" ]; then
 		if [ -n "$2" ]; then
