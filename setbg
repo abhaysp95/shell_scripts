@@ -14,6 +14,7 @@ save_file="/home/$(logname)/.config/wall.png"
 pic_dir="/home/$(logname)/Pictures/bgwallpapers"
 cur_wallname="/home/$(logname)/.config/wallname.txt"
 time_to_sleep="21600"  # 6 hours
+wallpaperset=0
 
 # help menu
 function get_help() {
@@ -61,98 +62,98 @@ function write_name() {
 # if file given, then look no further
 [ -f "$1" ] && \
 	cp "$*" "${save_file}" && \
-	notify-send -t 2500 -i "${save_file}" "Wallpaper changed"
+	write_name "$*" && \
+	notify-send -t 2500 -i "${save_file}" "Wallpaper changed" && \
+	wallpaperset=1
 
 # if given, but not a file
-if [ -n "$1" ]; then
-	# if first argument is --gray
-	if [ -n "$2" ] && [ "$1" != "--daemonize" ] && [ "$1" != "--gray" ]; then
-		# if second argument is a file
-		[ -f "$2" ] && convert_to_gray "$2" && \
-		notify-send -t 2500 -i "${save_file}" "Wallpaper set after gray conversion"
-		# if second argument is a directory
-		[ -d "$2" ] && \
-			convert_to_gray "$(fd --type f -u -e jpg -e jpeg -e png . "$2" | shuf -n 1)" && \
-			notify-send -t 2500 -i "${save_file}" "Random wallpaper set after gray conversion from given directory"
-	# if first argument is --gray but there's no second argument, then chose random
-	elif [ "$1" = "--gray" ]; then
-		echo "inside --gray"
-		if [ -z "$2" ]; then
-			echo "inside if"
-			convert_to_gray "$(fd --type f -e jpg -e jpeg -e png -u . "${pic_dir}" | shuf -n 1)"
-			notify-send -t 2500 -i "${save_file}" "Random wallpaper set after gray conversion"
-		elif [ "$2" = "-c" ] || [ "$2" = "--current" ]; then
-			echo "right place"
-			if [ -f "${cur_wallname}" ]; then
-				echo "inside right place"
-				convert_to_gray $(cat "${cur_wallname}")
-			else
-				echo "no file exists named: ${cur_wallname}"
+if [ "${wallpaperset}" -ne 1 ]; then
+	if [ -n "$1" ]; then
+		# if first argument is --gray
+		if [ -n "$2" ] && [ "$1" != "--daemonize" ] && [ "$1" != "--gray" ]; then
+			# if second argument is a file
+			[ -f "$2" ] && convert_to_gray "$2" && \
+			notify-send -t 2500 -i "${save_file}" "Wallpaper set after gray conversion"
+			# if second argument is a directory
+			[ -d "$2" ] && \
+				convert_to_gray "$(fd --type f -u -e jpg -e jpeg -e png . "$2" | shuf -n 1)" && \
+				notify-send -t 2500 -i "${save_file}" "Random wallpaper set after gray conversion from given directory"
+		# if first argument is --gray but there's no second argument, then chose random
+		elif [ "$1" = "--gray" ]; then
+			if [ -z "$2" ]; then
+				convert_to_gray "$(fd --type f -e jpg -e jpeg -e png -u . "${pic_dir}" | shuf -n 1)"
+				notify-send -t 2500 -i "${save_file}" "Random wallpaper set after gray conversion"
+			elif [ "$2" = "-c" ] || [ "$2" = "--current" ]; then
+				if [ -f "${cur_wallname}" ]; then
+					convert_to_gray $(cat "${cur_wallname}")
+				else
+					echo "no file exists named: ${cur_wallname}"
+				fi
 			fi
-		fi
-	# daemnization part of script
-	elif [ "$1" = "--daemonize" ]; then
-		if [ -n "$2" ]; then
-			flag="$2"
-			if [ "${flag}" = "yes" ]; then
-				flag="no"
-			else
-				flag="yes"
+		# daemnization part of script
+		elif [ "$1" = "--daemonize" ]; then
+			if [ -n "$2" ]; then
+				flag="$2"
+				if [ "${flag}" = "yes" ]; then
+					flag="no"
+				else
+					flag="yes"
+				fi
+				if [ "${flag}" = "yes" ]; then
+					trap '' INT
+					cd /home/"$(logname)"/.cache/temp || exit 0
+					shift
+					while true; do
+						filename=$(fd --type f -u -e jpg -e jpeg -e png . "${pic_dir}" | shuf -n 1)
+						write_name "${filename}"
+						cp "${filename}" "${save_file}"
+						notify-send -t 2500 -i "${save_file}" "Random Wallpaper set"
+						#setbg -a
+						nitrogen --set-zoom-fill "${save_file}"
+						sleep "${time_to_sleep}"
+					done
+					exit 0
+				fi
+				nohup setsid "$0" --daemonize no 2>/home/"$(logname)"/.cache/temp/chwall.err >/home/"$(logname)"/.cache/temp/chwall.log &
 			fi
-			if [ "${flag}" = "yes" ]; then
-				trap '' INT
-				cd /home/"$(logname)"/.cache/temp || exit 0
-				shift
-				while true; do
-					filename=$(fd --type f -u -e jpg -e jpeg -e png . "${pic_dir}" | shuf -n 1)
-					write_name "${filename}"
-					cp "${filename}" "${save_file}"
-					notify-send -t 2500 -i "${save_file}" "Random Wallpaper set"
-					#setbg -a
-					nitrogen --set-zoom-fill "${save_file}"
-					sleep "${time_to_sleep}"
-				done
-				exit 0
+		# kill the script if it's daemonized
+			# kill $(ps axh | grep ".*[s]etbg --daemonize.*" | head -n 1 | cut -d' ' -f1)
+			# pass {write here}
+		elif [ "$1" = "--kill" ]; then
+			pid=$(ps aux | grep ".*[s]etbg --daemonize.*" | head -n 1 | cut -d' ' -f 2)
+			if [ "${pid}" -gt 0 ]; then
+				kill "${pid}"
+				echo "Killed process. Process id: ${pid}"
 			fi
-			nohup setsid "$0" --daemonize no 2>/home/"$(logname)"/.cache/temp/chwall.err >/home/"$(logname)"/.cache/temp/chwall.log &
+			# get pid
+			# if condition passes, kill script and run again
+		elif [ "$1" = "--restart" ]; then
+			pid=$(ps aux | grep ".*[s]etbg --daemonize.*" | head -n 1 | cut -d' ' -f 2)
+			if [ "${pid}" -gt 0 ]; then
+				setbg --kill  # call this script which has --kill flag given previously
+				echo "script daemonized"
+				setbg --daemonize yes  # restart and daemoniz script
+			fi
+		# change wallpaper randomly, one time
+		elif [ "$1" = "-a" ] || [ "$1" = "--autochange" ]; then
+			filename=$(fd --type f -u -e jpg -e jpeg -e png . "${pic_dir}" | shuf -n 1)
+			echo "${filename}"
+			write_name "${filename}"
+			cp "${filename}" "${save_file}"
+			notify-send -t 2500 -i "${save_file}" "Random Wallpaper set"
+		# if first argument is not --gray, then it should be a directory
+		elif [ "$1" != "--gray" ] && [ -z "$2" ]; then
+			[ -d "$1" ] && \
+				filename=$(fd --type f -u -e jpg -e jpeg -e png . "$1" | shuf -n 1) && \
+				write_name "${filename}" && \
+				cp "${filename}" "${save_file}" && \
+				notify-send -t 2500 -i "${save_file}" "Random Wallpaper set" || echo "Wrong argument provided. Check help(setbg --help)"
+		else
+			echo "Wrong argument provided. Check help(setbg --help)"
 		fi
-	# kill the script if it's daemonized
-		# kill $(ps axh | grep ".*[s]etbg --daemonize.*" | head -n 1 | cut -d' ' -f1)
-		# pass {write here}
-	elif [ "$1" = "--kill" ]; then
-		pid=$(ps aux | grep ".*[s]etbg --daemonize.*" | head -n 1 | cut -d' ' -f 2)
-		if [ "${pid}" -gt 0 ]; then
-			kill "${pid}"
-			echo "Killed process. Process id: ${pid}"
-		fi
-		# get pid
-		# if condition passes, kill script and run again
-	elif [ "$1" = "--restart" ]; then
-		pid=$(ps aux | grep ".*[s]etbg --daemonize.*" | head -n 1 | cut -d' ' -f 2)
-		if [ "${pid}" -gt 0 ]; then
-			setbg --kill  # call this script which has --kill flag given previously
-			echo "script daemonized"
-			setbg --daemonize yes  # restart and daemoniz script
-		fi
-	# change wallpaper randomly, one time
-	elif [ "$1" = "-a" ] || [ "$1" = "--autochange" ]; then
-		filename=$(fd --type f -u -e jpg -e jpeg -e png . "${pic_dir}" | shuf -n 1)
-		echo "${filename}"
-		write_name "${filename}"
-		cp "${filename}" "${save_file}"
-		notify-send -t 2500 -i "${save_file}" "Random Wallpaper set"
-	# if first argument is not --gray, then it should be a directory
-	elif [ "$1" != "--gray" ] && [ -z "$2" ]; then
-		[ -d "$1" ] && \
-			filename=$(fd --type f -u -e jpg -e jpeg -e png . "$1" | shuf -n 1) && \
-			write_name "${filename}" && \
-			cp "${filename}" "${save_file}" && \
-			notify-send -t 2500 -i "${save_file}" "Random Wallpaper set" || echo "Wrong argument provided. Check help(setbg --help)"
 	else
-		echo "Wrong argument provided. Check help(setbg --help)"
+		echo "No argument provided. Check help(setbg --help)"
 	fi
-else
-	echo "No argument provided. Check help(setbg --help)"
 fi
 
 
