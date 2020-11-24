@@ -12,6 +12,8 @@
 #echo "${SELECTED_THEME_NAME}"
 alacritty_theme_path="/home/$(logname)/.config/alacritty/alacritty_themes"
 alacritty_config="/home/$(logname)/.config/alacritty"
+kitty_theme_path="/home/$(logname)/.config/kitty/kitty_themes"
+kitty_config="/home/$(logname)/.config/kitty"
 termite_theme_path="/home/$(logname)/.config/termite/termite_themes"
 termite_config="/home/$(logname)/.config/termite"
 xresources_theme_path="/home/$(logname)/.config/xresources_colors/"
@@ -60,14 +62,51 @@ function change_colorscheme_terminal() {
 			echo "Selection not found in the folder ${alacritty_theme_path}"
 		fi
 
-		# configuration for termite is still left
-	elif [ "$TERMINAL" = "termite" ]; then
-		theme_files=($(basename -a $(find "${termite_theme_path}" -type f -iname "*${selected_theme}*") 2>/dev/null))
+	elif [ "$TERMINAL" = "kitty" ]; then
+		theme_files=($(basename -a \
+			$(find "${kitty_theme_path}" -type f -iname "*{selected_theme}*") 2>/dev/null))
 		theme_files_count="${#theme_files[@]}"
 		if [ ${theme_files_count} -gt 1 ]; then
 			echo "Found more than with this colorscheme"
 			if [ -n $(echo "${PATH}" | grep -io fzf) ]; then
-				selected_file=$(echo "${theme_files[@]}" | sed -e 's/ /\n/g' | fzf --prompt "Select file:" --border sharp --height 25%)
+				selected_file=$(echo "${theme_files[@]}" \
+					| sed -e 's/ /\n/g' \
+					| fzf --prompt "Select file:" --border sharp --height 25%)
+			else
+				select selected_file in "${theme_files[@]}"; do
+					echo "you selected ${selected_file}"
+					break
+				done
+			fi
+		else
+			selected_file="${theme_files}"
+		fi
+		if [ -n "${selected_file}" ]; then
+			if [ -f "${kitty_theme_path}/${selected_file}" ]; then
+				echo "Changing colorscheme for kitty to ${selected_file}"
+				cat "${kitty_config}/base.conf" \
+					"${kitty_theme_path}/${selected_file}" \
+					> ${kitty_config}/kitty.conf
+				echo "Changed successfully"
+			else
+				echo "Selected file not found, or not selected an option"
+			fi
+		else
+			echo "Selected file not found in the folder ${kitty_theme_path}"
+		fi
+
+		# configuration for termite is still left
+	elif [ "$TERMINAL" = "termite" ]; then
+		theme_files=($(basename -a \
+			$(find "${termite_theme_path}" -type f -iname "*${selected_theme}*") 2>/dev/null))
+		theme_files_count="${#theme_files[@]}"
+		if [ ${theme_files_count} -gt 1 ]; then
+			echo "Found more than with this colorscheme"
+			if [ -n $(echo "${PATH}" | grep -io fzf) ]; then
+				selected_filedw
+				=$(echo "${theme_files[@]}" \
+					| sed -e 's/ /\n/g' \
+					| fzf --prompt "Select file:" --border sharp --height 25%)
 			else
 				select selected_file in "${theme_files[@]}"; do
 					echo "you selected ${selected_file}"

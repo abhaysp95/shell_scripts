@@ -2,7 +2,9 @@
 
 # now, I had mapped this script to a key, which automatically saves this to $HOME, that's why every thing is based on $HOME directory
 
-pgrep picom && kill $(pidof picom)
+if [ $1 = "picom" ]; then
+	pgrep picom && kill $(pidof picom)
+fi
 
 scrot -q 100 -s -f -l style=solid,width=2
 
