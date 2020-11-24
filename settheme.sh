@@ -35,12 +35,15 @@ function change_colorscheme_terminal() {
 	# change colorscheme for TERMINAL
 	theme_files_count=0
 	if [ "$TERMINAL" = "alacritty" ]; then
-		theme_files=($(basename -a $(find "${alacritty_theme_path}" -type f -iname "*${selected_theme}*") 2>/dev/null))
+		theme_files=($(basename -a \
+			$(find "${alacritty_theme_path}" -type f -iname "*${selected_theme}*") 2>/dev/null))
 		theme_files_count="${#theme_files[@]}"
 		if [ ${theme_files_count} -gt 1 ]; then
 			echo "Found more than with this colorscheme"
 			if [ -n $(echo "${PATH}" | grep -io fzf) ]; then
-				selected_file=$(echo "${theme_files[@]}" | sed -e 's/ /\n/g' | fzf --prompt "Select file:" --border sharp --height 25%)
+				selected_file=$(echo "${theme_files[@]}" \
+					| sed -e 's/ /\n/g' \
+					| fzf --prompt "Select file:" --border sharp --height 25%)
 			else
 				select selected_file in "${theme_files[@]}"; do
 					echo "you selected ${selected_file}"
@@ -53,7 +56,9 @@ function change_colorscheme_terminal() {
 		if [ -n "${selected_file}" ]; then
 			if [ -f "${alacritty_theme_path}/${selected_file}" ]; then
 				echo "Changing colorscheme for alacritty to ${selected_file}"
-				cat "${alacritty_config}/base.yml" "${alacritty_theme_path}/${selected_file}" > "${alacritty_config}/alacritty.yml"
+				cat "${alacritty_config}/base.yml" \
+					"${alacritty_theme_path}/${selected_file}" \
+					> "${alacritty_config}/alacritty.yml"
 				echo "Changed successfully"
 			else
 				echo "Selected file not found, or not selected an option"
@@ -119,7 +124,9 @@ function change_colorscheme_terminal() {
 		if [ -n "${selected_file}" ]; then
 			if [ -f "${termite_theme_path}/${selected_file}" ]; then
 				echo "Changing colorscheme ${selected_file}"
-				cat "${termite_config}/base-config" "${termite_theme_path}/${selected_file}" > "${termite_config}/config"
+				cat "${termite_config}/base-config" \
+					"${termite_theme_path}/${selected_file}" \
+					> "${termite_config}/config"
 				echo "Changed successfully"
 			else
 				echo "Selected file not found, or not selected an option"
