@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+
+# toggle on and off tomcat server
+
+# tomcatup -> /usr/local/bin/tomcatup -> /opt/tomcat-8.5.59/bin/startup.sh*
+# tomcatdown -> /usr/local/bin/tomcatdown -> /opt/tomcat-8.5.59/bin/shutdown.sh*
+
+if ps aux | grep -E 'tomcat.*startup' | grep -v 'grep' 1>/dev/null; then
+	echo "tomcat server running: $(ps aux | grep -E 'tomcat.*startup' | grep -v grep | head -n 1 | cut -d' ' -f 2)"
+	echo "stopping now"
+	echo
+	echo "-----------------"
+	echo
+	tomcatdown
+else
+	echo "tomcat server not running"
+	echo "starting now"
+	echo
+	echo "----------------"
+	echo
+	tomcatup
+fi
