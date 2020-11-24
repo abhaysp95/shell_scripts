@@ -2,7 +2,7 @@
 
 # for bspwm and polybar
 
-dec_padding=6
+dec_padding=0
 inc_padding=12
 
 pid=$(pidof polybar)
