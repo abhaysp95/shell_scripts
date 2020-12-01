@@ -39,7 +39,7 @@ function change_colorscheme_terminal() {
 			$(find "${alacritty_theme_path}" -type f -iname "*${selected_theme}*") 2>/dev/null))
 		theme_files_count="${#theme_files[@]}"
 		if [ ${theme_files_count} -gt 1 ]; then
-			echo "Found more than with this colorscheme"
+			echo "Found more than one file with this colorscheme"
 			if [ -n $(echo "${PATH}" | grep -io fzf) ]; then
 				selected_file=$(echo "${theme_files[@]}" \
 					| sed -e 's/ /\n/g' \
@@ -68,8 +68,9 @@ function change_colorscheme_terminal() {
 		fi
 
 	elif [ "$TERMINAL" = "kitty" ]; then
+		echo "file to search is ${selected_theme}"
 		theme_files=($(basename -a \
-			$(find "${kitty_theme_path}" -type f -iname "*{selected_theme}*") 2>/dev/null))
+			$(find "${kitty_theme_path}" -type f -iname "*${selected_theme}*") 2>/dev/null))
 		theme_files_count="${#theme_files[@]}"
 		if [ ${theme_files_count} -gt 1 ]; then
 			echo "Found more than with this colorscheme"
@@ -106,7 +107,7 @@ function change_colorscheme_terminal() {
 			$(find "${termite_theme_path}" -type f -iname "*${selected_theme}*") 2>/dev/null))
 		theme_files_count="${#theme_files[@]}"
 		if [ ${theme_files_count} -gt 1 ]; then
-			echo "Found more than with this colorscheme"
+			echo "Found more than one file with this colorscheme"
 			if [ -n $(echo "${PATH}" | grep -io fzf) ]; then
 				selected_filedw
 				=$(echo "${theme_files[@]}" \
@@ -145,7 +146,7 @@ function change_colorscheme_xresources() {
 	theme_files=($(basename -a $(find "${xresources_theme_path}" -type f -iname "*${selected_theme}*") 2>/dev/null))
 	theme_files_count="${#theme_files[@]}"
 	if [ ${theme_files_count} -gt 1 ]; then
-		echo "Found more than with this colorscheme"
+		echo "Found more than one file with this colorscheme"
 		if [ -n "$(echo ${PATH} | grep -io fzf)" ]; then
 			selected_file=$(echo "${theme_files[@]}" | sed -e 's/ /\n/g' | fzf --prompt "Select file:" --border sharp --height 25%)
 		else
