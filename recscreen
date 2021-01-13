@@ -1,6 +1,18 @@
 #!/usr/bin/env sh
 
-video() {
+# script to record audio and video
+
+
+function reconlyaudio() {
+	ffmpeg \
+		-f pulse \
+		-i default \
+		"$HOME/audio-$(date '+%Y-%m-%d-%H%M-%s').wav" &
+	echo "$!" > /tmp/recscreenpid
+	notify-send -t 3000 "Audio Recording Started"
+}
+
+function reconlyvideo() {
 	ffmpeg \
 		-f x11grab \
 		-s "$(xdpyinfo | grep dimensions | awk '{print $2;}')" \
@@ -11,12 +23,29 @@ video() {
 		notify-send --icon="$img" -t 3000 "Recording Started"
 }
 
+function recvideowithaudiotoo() {
+	ffmpeg \
+		-f x11grab \
+		-s "$(xdpyinfo | grep dimensions | awk '{print $2;}')" \
+		-i "$DISPLAY" \
+		-f pulse \
+		-i default \
+		"$HOME/video-$(date '+%Y-%m-%d-%H%M-%S').mkv" &
+		echo "$!" > /tmp/recscreenpid
+		img="$(readlink -f ~/.cache/notify-icons/movie-player.png)"
+		notify-send --icon="$img" -t 3000 "Recording Started"
+}
+
 killrec() {
 	recpid="$(cat /tmp/recscreenpid)"
 
 	# getting notification first
-	img="$(readlink -f ~/.cache/notify-icons/video-player.png)"
-	notify-send --icon="$img" -t 3000 "Recording Stopped"
+	if [ "$1" == "--audio" ]; then
+		notify-send -t 3000 "Audio Recording Stopped"
+	else
+		img="$(readlink -f ~/.cache/notify-icons/video-player.png)"
+		notify-send --icon="$img" -t 3000 "Recording Stopped"
+	fi
 
 	# killing with SIGTERM first, allows finishing touches
 	kill -15 "$recpid"
@@ -26,9 +55,17 @@ killrec() {
 }
 
 moverec() {
-	get_file="$(fd -d 1 -u video -e mkv "$HOME")"
+	#get_file="$(fd -d 1 -u video -e mkv "$HOME")"
+	get_file=$(find "$HOME" -maxdepth 1 -iname "video*.mkv" -o -iname "audio*.wav")
 	moveto="$(basename "$(echo "$get_file" | awk -F- '{print $2 "-" $3}')")"
-	save_path="$HOME/Videos/recorded/$moveto"
+	ext="${get_file##*.}"
+	if [ "${ext}" = "mkv" ]; then
+		save_path="$HOME/Videos/recorded/$moveto"
+	elif [ "${ext}" = "wav" ]; then
+		save_path="$HOME/Music/recorded/$moveto"
+	else
+		save_path="$HOME"
+	fi
 
 	[ ! -d "$save_path" ] && mkdir -p "$save_path"
 
@@ -36,8 +73,14 @@ moverec() {
 	notify-send -t 2000 "$(printf 'Recording saved to path\n%s' "$save_path")"
 }
 
-if [ ! -f /tmp/recscreenpid ]; then
-	video
+if [ ! -f "/tmp/recscreenpid" ]; then
+	if [ -z "$1" ]; then
+		recvideowithaudiotoo
+	elif [ "$1" = "--only-audio" ]; then
+		reconlyaudio
+	elif [ "$1" = "--only-video" ]; then
+		reconlyvideo
+	fi
 else
 	killrec
 	moverec
