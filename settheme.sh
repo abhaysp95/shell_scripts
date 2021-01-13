@@ -196,6 +196,7 @@ function change_colorscheme_dunst() {
 	# range based sed, from urgency_normal till newline is encountered (format /rangestart/,/rangestop/s/search/replace/)
 	sed -i -E "/urgency_normal/,/^\s*$/s/(^\s*background\s*=\s*)\".+\"/\1\"${background_xresources}\"/" "${dunst_config}"
 	sed -i -E "/urgency_normal/,/^\s*$/s/(^\s*foreground\s*=\s*)\".+\"/\1\"${foreground_xresources}\"/" "${dunst_config}"
+	sed -i -E "/urgency_normal/,/^\s*$/s/(^\s*frame_color\s*=\s*)\".+\"/\1\"${foreground_xresources}\"/" "${dunst_config}"
 	# from line 0 to first frame_color, and then replace, // means
 	sed -i -e "0,/\(^\s*frame_color\s*=\s*\)\".\+\"/s//\1\"${color7}\"/" "${dunst_config}"
 
@@ -240,9 +241,9 @@ function change_colorscheme_rofi() {
 
 function change_colorscheme_bspwm() {
 	# sed -n -e 's/\(^.*normal_border_color\s*\)"[#[:alnum:]]\+"$/\1#282828/p' bspwmrc
-	sed -i -e "s/\(^.*normal_border_color\s*\)\"[#[:alnum:]]\+\"$/\1\"${background_xresources}\"/" "${bspwm_config}"
-	sed -i -e "s/\(^.*active_border_color\s*\)\"[#[:alnum:]]\+\"$/\1\"${background_xresources}\"/" "${bspwm_config}"
-	sed -i -e "s/\(^.*focused_border_color\s*\)\"[#[:alnum:]]\+\"$/\1\"${foreground_xresources}\"/" "${bspwm_config}"
+	sed -i -e "s/\(^.*normal_border_color\s*\)\"[#[:alnum:]]\+\"/\1\"${background_xresources}\"/" "${bspwm_config}"
+	sed -i -e "s/\(^.*active_border_color\s*\)\"[#[:alnum:]]\+\"/\1\"${background_xresources}\"/" "${bspwm_config}"
+	sed -i -e "s/\(^.*focused_border_color\s*\)\"[#[:alnum:]]\+\"/\1\"${foreground_xresources}\"/" "${bspwm_config}"
 
 	if [ -n "$1" ]; then
 		printf "\n%s\n\n" "Colors changed for bspwm borders are: "
