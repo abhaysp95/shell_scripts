@@ -1,9 +1,37 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
+
+# bash4.0 and above
+
+# add the dir name only to a file of your choice and give the filepath here
+file_name="${HOME}/.cache/temp/exclude_video_dirs.txt"
+
+ext_array=( "mp4" "mkv" "webm" )  # provide extensions for videos to search
+
+readarray -t excludedirs < "${file_name}"
+exclude_args=()
+find_extensions=()
+
+for names in "${excludedirs[@]}"; do
+	exclude_args+=("-E" "${names}")  # add -E(--exclude) flag
+done
+
+for ext in "${ext_array[@]}"; do
+	find_extensions+=("-e" "${ext}")  # add -e(to search by file extension)
+done
+
+#fd . -u "${exclude_args[@]}" --type f "${find_extensions[@]}" "${HOME}/Videos" "${HOME}/Downloads"
+
+(fd . -u "${exclude_args[@]}" --type f "${find_extensions[@]}" "${HOME}/Videos" "${HOME}/Downloads" - 0) | shuf | rofi -dmenu -lines 20 -i -matching fuzzy | xargs -I {} mpv "{}"
+
+
+
+
+
+
+# wastage ;)
 
 #(find ~/Videos -name "*mp4" && find ~/Videos -name "*mkv" && find ~/Videos -name "*webm" && find ~/Downloads -name "*mp4" && find ~/Downloads -name "*webm" && find ~/Downloads -name "*mkv") | rofi -dmenu -lines 20 -i | xargs -I {} mpv "{}"
 
 #(find ~/Videos -name "*mp4" -o -name "*webm" -o -name "*mkv" && find ~/Downloads -name "*mkv" -o -name "*mp4" -o -name "*webm") | rofi -dmenu -lines 20 -i | xargs -I {} mpv "{}"
 
 #(find ~/Videos ~/Downloads -name "*mp4" -o -name "*mkv" -o -name "*webm" ) | shuf | rofi -dmenu -lines 20 -i -matching fuzzy | xargs -I {} mpv "{}"
-
-(fd . -u --type f -e mp4 -e mkv -e webm '/home/raytracer/Videos' '/home/raytracer/Downloads' - 0) | shuf | rofi -dmenu -lines 20 -i -matching fuzzy | xargs -I {} mpv "{}"
