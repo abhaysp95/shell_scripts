@@ -1,0 +1,154 @@
+#!/usr/bin/env bash
+
+# currently used for 3 things:
+# 1. search man pages
+# 2. search pdfs available
+# 3. search videos available
+
+#################################################
+#   functions related with man page searching   #
+#################################################
+searchmanname() {
+	man -k . \
+		| dmenu -i -l 20 -c \
+		| awk '{print $1}' | xargs -r man -Tpdf \
+		| zathura -
+}
+
+shufmanname() {
+	getname=$(fd . --type f /usr/share/man/man1 \
+		| shuf \
+		| head -n 1)
+	propername=$(basename "${getname}" \
+		| sed 's/.1.gz//g')
+	# xargs -r man -Tpdf "${propername}" \
+	man -Tpdf "${propername}" \
+	| zathura -
+}
+
+man_options() {
+	get_man_choice=$(printf "%s\n%s\n" \
+		"search - It will provide list of the various commands to get manual" \
+		"shuf - It'll choose a random command and open it's manual" \
+		| dmenu -l 20 -i -c)
+		man_choice_is="$(echo "${get_man_choice}" | awk '{print $1}')"
+}
+
+#############################################
+#   functions related with pdfs searching   #
+#############################################
+
+setup_vars_for_pdfs() {
+	# add the dir names to file provided here to exclude from search
+	exclude_pdfs="${HOME}/.cache/temp/exclude_pdf_dirs.txt"
+	ext_pdf_array=( "pdf" )  # provide extension for pdf type to search
+	readarray -t exclude_pdf_dirs < "${exclude_pdfs}"
+	exclude_pdf_args=()
+	find_pdf_extensions=()
+}
+
+search_pdfs() {
+	setup_vars_for_pdfs
+	for names in "${exclude_pdf_dirs[@]}"; do
+		# add -E(--exclude) flag for fd
+		exclude_pdf_args+=("-E" "${names}")
+	done
+
+	for ext in "${ext_pdf_array[@]}"; do
+		# add -e(to search only provided file extension)
+		find_pdf_extensions+=("-e" "${ext}")
+	done
+
+	# search the pdf(testing with output on terminal)
+	#fd . -u "${exclude_pdf_args[@]}" --type f \
+		#"${find_pdf_extensions[@]}" \
+		#"${HOME}/Documents" "${HOME}/Downloads"
+
+	# search the pdfs
+	(fd . -u "${exclude_pdf_args[@]}" \
+		--type f \
+		"${find_pdf_extensions[@]}" \
+		"${HOME}/Documents" \
+		"${HOME}/Downloads" ) \
+		| shuf \
+		| dmenu -l 20 -i -c \
+		| xargs -I {} zathura "{}"
+}
+
+###############################################
+#   functions related with videos searching   #
+###############################################
+
+setup_var_for_videos() {
+	# add the directory names to the file name provided which
+	# you want to exclude from the search
+	exclude_videos="${HOME}/.cache/temp/exclude_video_dirs.txt"
+	# provide extension for video type to search
+	ext_video_array=( "mp4" "mkv" "webm" )
+	readarray -t exclude_video_dirs < "${exclude_videos}"
+	exclude_video_args=()
+	find_video_extensions=()
+}
+
+search_videos() {
+	setup_var_for_videos
+	for names in "${exclude_video_dirs[@]}"; do
+		# add -E(--exclude) flag for fd to exclude dirs
+		exclude_video_args+=("-E" "${names}")
+	done
+
+	for ext in "${ext_video_array[@]}"; do
+		# add -e(to search by file extension)
+		find_video_extensions+=("-e" "${ext}")
+	done
+
+	# search for the videos(for testing, ran this in terminal)
+	#fd . -u "${exclude_video_args[@]}" --type f \
+		#"${find_video_extensions[@]}" \
+		#"${HOME}/Videos" "${HOME}/Downloads"
+
+	# search the videos
+	(fd . -u "${exclude_video_args[@]}" \
+		--type f \
+		"${find_video_extensions[@]}" \
+		"${HOME}/Videos" \
+		"${HOME}/Downloads" ) \
+		| shuf \
+		| dmenu -l 20 -i -c \
+		| xargs -I {} mpv "{}"
+}
+
+global_choice=""
+show_all_options() {
+	all_choices=$(printf "%s\n%s\n%s\n" \
+		"man search - search for man pages available" \
+		"pdfs search - search for pdfs available" \
+		"videos search - search for videos available" \
+		| dmenu -l 20 -i -c)
+	global_choice+="$(echo "${all_choices}" | awk '{print $1}')"
+}
+
+if_first_arg_provided() {
+	#echo "reached if_first_arg_provided: $#, $1"
+	case "$1" in
+		man) echo "search man: $#"
+			man_options
+			case "$man_choice_is" in
+				search) searchmanname;;
+				shuf) shufmanname;;
+			esac;;
+		pdfs) echo "search pdfs: $#"
+			search_pdfs;;
+		videos) echo "search videos: $#"
+			search_videos;;
+	esac
+}
+
+if [[ $# -eq 0 ]]; then
+	echo "$#"
+	show_all_options
+	if_first_arg_provided "${global_choice}"
+else
+	echo "inside else"
+	if_first_arg_provided "$@"
+fi
