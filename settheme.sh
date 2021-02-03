@@ -196,7 +196,7 @@ function change_colorscheme_dunst() {
 	# range based sed, from urgency_normal till newline is encountered (format /rangestart/,/rangestop/s/search/replace/)
 	sed -i -E "/urgency_normal/,/^\s*$/s/(^\s*background\s*=\s*)\".+\"/\1\"${background_xresources}\"/" "${dunst_config}"
 	sed -i -E "/urgency_normal/,/^\s*$/s/(^\s*foreground\s*=\s*)\".+\"/\1\"${foreground_xresources}\"/" "${dunst_config}"
-	sed -i -E "/urgency_normal/,/^\s*$/s/(^\s*frame_color\s*=\s*)\".+\"/\1\"${foreground_xresources}\"/" "${dunst_config}"
+	sed -i -E "/urgency_normal/,/^\s*$/s/(^\s*frame_color\s*=\s*)\".+\"/\1\"${color4}\"/" "${dunst_config}"
 	# from line 0 to first frame_color, and then replace, // means
 	sed -i -e "0,/\(^\s*frame_color\s*=\s*\)\".\+\"/s//\1\"${color7}\"/" "${dunst_config}"
 
