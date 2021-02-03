@@ -21,7 +21,7 @@ done
 
 #fd . -u "${exclude_args[@]}" --type f "${find_extensions[@]}" "${HOME}/Documents" "${HOME}/Downloads"
 
-(fd . -u "${exclude_args[@]}" --type f "${find_extensions[@]}" "${HOME}/Documents" "${HOME}/Downloads" - 0) | shuf | rofi -dmenu -lines 20 -i -matching fuzzy | xargs -I {} mpv "{}"
+(fd . -u "${exclude_args[@]}" --type f "${find_extensions[@]}" "${HOME}/Documents" "${HOME}/Downloads" - 0) | shuf | rofi -dmenu -lines 20 -i -matching fuzzy | xargs -I {} zathura "{}"
 
 
 

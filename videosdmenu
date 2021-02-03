@@ -1,0 +1,24 @@
+#!/bin/sh
+
+# bash4.0 and above
+
+# add the dir name only to a file of your choice and give the filepath here
+file_name="${HOME}/.cache/temp/exclude_video_dirs.txt"
+
+ext_array=( "mp4" "mkv" "webm" )  # provide extensions for videos to search
+
+readarray -t excludedirs < "${file_name}"
+exclude_args=()
+find_extensions=()
+
+for names in "${excludedirs[@]}"; do
+	exclude_args+=("-E" "${names}")  # add -E(--exclude) flag
+done
+
+for ext in "${ext_array[@]}"; do
+	find_extensions+=("-e" "${ext}")  # add -e(to search by file extension)
+done
+
+#fd . -u "${exclude_args[@]}" --type f "${find_extensions[@]}" "${HOME}/Videos" "${HOME}/Downloads"
+
+(fd . -u "${exclude_args[@]}" --type f "${find_extensions[@]}" "${HOME}/Videos" "${HOME}/Downloads" ) | shuf | dmenu -l 20 -i | xargs -I {} mpv "{}"

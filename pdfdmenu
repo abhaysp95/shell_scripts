@@ -2,6 +2,23 @@
 
 #diff <(pacman -Q) <(pacman -Qn)
 
-(find ~/Downloads ~/Documents -name "*pdf*") | dmenu -l 20 -i -nb '#282828' -sf '#282828' -nf '#ebdbb2' -sb '#b8bb26' -fn "FuraCode Nerd Font 09"| xargs -I {} zathura "{}"
-#ls -R ~/Documents | grep .pdf | dmenu -l 20 -i | xargs -I {} zathura "{}"
-#ls -R $HOME/Documents/pdf/* | dmenu -l 20 -i | xargs -I {} zathura "{}"
+# add the dir name only to a file of your choice and give the filepath here
+file_name="${HOME}/.cache/temp/exclude_pdf_dirs.txt"
+
+ext_array=( "pdf" )  # provide extensions for videos to search
+
+readarray -t excludedirs < "${file_name}"
+exclude_args=()
+find_extensions=()
+
+for names in "${excludedirs[@]}"; do
+	exclude_args+=("-E" "${names}")  # add -E(--exclude) flag
+done
+
+for ext in "${ext_array[@]}"; do
+	find_extensions+=("-e" "${ext}")  # add -e(to search by file extension)
+done
+
+#fd . -u "${exclude_args[@]}" --type f "${find_extensions[@]}" "${HOME}/Documents" "${HOME}/Downloads"
+
+(fd . -u "${exclude_args[@]}" --type f "${find_extensions[@]}" "${HOME}/Documents" "${HOME}/Downloads" ) | shuf | dmenu -l 20 -i -c | xargs -I {} zathura "{}"
