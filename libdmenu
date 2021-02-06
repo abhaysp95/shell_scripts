@@ -129,26 +129,20 @@ show_all_options() {
 }
 
 if_first_arg_provided() {
-	#echo "reached if_first_arg_provided: $#, $1"
 	case "$1" in
-		man) echo "search man: $#"
-			man_options
+		man) man_options
 			case "$man_choice_is" in
 				search) searchmanname;;
 				shuf) shufmanname;;
 			esac;;
-		pdfs) echo "search pdfs: $#"
-			search_pdfs;;
-		videos) echo "search videos: $#"
-			search_videos;;
+		pdfs) search_pdfs;;
+		videos) search_videos;;
 	esac
 }
 
 if [[ $# -eq 0 ]]; then
-	echo "$#"
 	show_all_options
 	if_first_arg_provided "${global_choice}"
 else
-	echo "inside else"
 	if_first_arg_provided "$@"
 fi
