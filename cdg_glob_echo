@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+user_filelist=""
+
+if [ -r ~/.config/.cdg_paths ]; then
+	user_filelist=$(cat ~/.config/.cdg_paths | sed 's/#.*//g' | sed '/^\s*$/d')
+fi
+
+echo -e "${user_filelist}" | sed '/^\s*$/d'
