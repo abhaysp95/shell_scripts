@@ -34,6 +34,36 @@ man_options() {
 		man_choice_is="$(echo "${get_man_choice}" | awk '{print $1}')"
 }
 
+####################################################
+#   functions related with searching of vim help   #
+####################################################
+
+get_doc_folder() {
+	folder_is=""
+	for folder in $(find /tmp -type d -iname "*mount_nvim*" 2>/dev/null); do
+		if [[ "${folder}" != "" ]]; then
+			for doc_folder in $(find "${folder}/usr/share/nvim/runtime" -type d -iname "*doc*"); do
+				if [[ "${doc_folder}" != "" ]]; then
+					folder_is="${doc_folder}"
+					break
+				fi
+			done
+			if [[ "{folder_is}" != "" ]]; then
+				break
+			fi
+		fi
+	done
+}
+
+search_vim_help() {
+	get_doc_folder
+	help_selected=$(find "${folder_is}" -type f \
+		| xargs -I {} basename "{}" \
+		| dmenu -l 20 -c -i -p 'select help:')
+	help_selected="${folder_is}/${help_selected}"
+	notify-send "${help_selected}"
+}
+
 #############################################
 #   functions related with pdfs searching   #
 #############################################
@@ -126,6 +156,7 @@ show_all_options() {
 		"man search - search for man pages available" \
 		"pdfs search - search for pdfs available" \
 		"videos search - search for videos available" \
+		#"vim-help search - search for help pages from vim" \  # still incomplete
 		| dmenu -l 20 -i -c)
 	global_choice+="$(echo "${all_choices}" | awk '{print $1}')"
 }
@@ -139,6 +170,7 @@ if_first_arg_provided() {
 			esac;;
 		pdfs) search_pdfs;;
 		videos) search_videos;;
+		vim-help) search_vim_help;;
 	esac
 }
 
