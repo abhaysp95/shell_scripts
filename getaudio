@@ -11,22 +11,59 @@
 
 # Default path is $HOME/Music/converted
 
-echo 'Enter music format: '
-read -r music_format
+if [ "$*" == "--help" ] || [ "$*" == "-h" ]; then
+	echo "enter filename as 1st argument, and song format as second"
+	exit 0
+fi
 
-name=$(echo "$*" | cut -d'.' -f1)."$music_format"
+GREEN='\033[1;32m'
+RED='\033[1;31m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+input_provided="$*"
+music_format="${input_provided##* }"
+music_name="$(printf "%s\n" "${input_provided//${music_format}/}" | sed 's/ *$//')"
+
+new_name=$(echo "${music_name}" | cut -d'.' -f1)."$music_format"
+
+#new_music_name=$(basename -- "$new_name" | sed 's/ /\_/g')
+new_music_name=$(basename -- "${new_name}")
+
+destination_music="$HOME/Music/converted/${new_music_name}"
 
 
-# base_file_name=$(basename -- "$name")
+echo
+echo "YOU PROVIDED: "
+echo -e "${GREEN}==> ${YELLOW}music format:${NC} ${music_format}"
+echo -e "${GREEN}==> ${YELLOW}file provided:${NC} ${music_name}"
+echo -e "${GREEN}==> ${YELLOW}new name:${NC} ${new_name}"
+echo -e "${GREEN}==> ${YELLOW}new_music_name:${NC} ${new_music_name}"
 
-music_name=$(basename -- "$name" | sed 's/ /\_/g')
+printf "\nConverting \e[1m%s\e[0m\nto\n\e[1m%s\e[0m\n\n" "${music_name}" "${destination_music}"
 
-printf "Converting %s\nto\n%s" "$*" "$HOME/Music/converted/$music_name"
 
-# echo "converting $* to $music_name"
+if [ -f "${music_name}" ]; then
+	if [ ! -f "${destination_music}" ]; then
+		ffmpeg -i "${music_name}" -f "${music_format}" -ab 256000 -vn "${destination_music}"
+	else
+		echo -e "${RED}!!!${NC} File already exists in destination"
+	fi
+else
+	echo -e "${RED}!!!${NC} File not found"
+fi
 
-ffmpeg -i "$*" -f "$music_format" -ab 256000 -vn "$HOME"/Music/converted/"$music_name"
 # -i takes input
 # -f specify format
 # -ab bitrate
 # -vn no video
+
+# for reference:
+# echo -e "\e[1mbold\e[0m"
+# echo -e "\e[3mitalic\e[0m"
+# echo -e "\e[3m\e[1mbold italic\e[0m"
+# echo -e "\e[4munderline\e[0m"
+# echo -e "\e[4m\e[1mbold-underline\e[0m"  <-- another addition
+# echo -e "\e[9mstrikethrough\e[0m"
+# echo -e "\e[31mHello World\e[0m"
+# echo -e "\x1B[31mHello World\e[0m"
