@@ -25,9 +25,8 @@ input_provided="$*"
 music_format="${input_provided##* }"
 music_name="$(printf "%s\n" "${input_provided//${music_format}/}" | sed 's/ *$//')"
 
-new_name=$(echo "${music_name}" | cut -d'.' -f1)."$music_format"
+new_name="$(printf "%s\n" "${music_name//${music_name##*.}/}" | sed 's/\.$//')"."${music_format}"
 
-#new_music_name=$(basename -- "$new_name" | sed 's/ /\_/g')
 new_music_name=$(basename -- "${new_name}")
 
 destination_music="$HOME/Music/converted/${new_music_name}"
