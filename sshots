@@ -14,8 +14,8 @@ declare -a sshots_options=(
 "Fullscreen(screenshot + copy)"
 "Active Window(screenshot + copy)"
 "Selected Region(screenshot + copy)"
-"Delay(Fullscreen + screenshot + copy only)"
-"Delay(Window + screenshot + copy only)"
+"Delay(Fullscreen + screenshot + copy)"
+"Delay(Window + screenshot + copy)"
 "Quit"
 )
 
@@ -84,7 +84,7 @@ function delay_sshot() {
 }
 
 function dmenu_sshot() {
-	choice=$(printf '%s\n' "${sshots_options[@]}" | dmenu -i -l "${#sshots_options}" -c -p 'Take Screenshot: ')
+	choice=$(printf '%s\n' "${sshots_options[@]}" | dmenu -i -l 17 -c -p 'Take Screenshot: ')
 
 	case "${choice}" in
 		"Fullscreen")
@@ -158,8 +158,8 @@ function get_help() {
 	echo "                         Fullscreen(screenshot + copy)"
 	echo "                         Active Window(screenshot + copy)"
 	echo "                         Selected Region(screenshot + copy)"
-	echo "                         Delay(Fullscreen + screenshot + copy only)"
-	echo "                         Delay(Window + screenshot + copy only)"
+	echo "                         Delay(Fullscreen + screenshot + copy)"
+	echo "                         Delay(Window + screenshot + copy)"
 	echo "                         Quit"
 	echo "  -f,  --full            Take Fullscreen screenshot"
 	echo "  -w,  --window          Take active window screenshot"
