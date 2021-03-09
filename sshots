@@ -4,12 +4,18 @@ declare -a sshots_options=(
 "Fullscreen"
 "Active Window"
 "Selected Region(Range)"
+"Delay(Fullscreen)"
+"Delay(Window)"
 "Fullscreen(copy only)"
 "Active Window(copy only)"
 "Selected Region(copy only)"
+"Delay(Fullscreen + copy only)"
+"Delay(Window + copy only)"
 "Fullscreen(screenshot + copy)"
 "Active Window(screenshot + copy)"
 "Selected Region(screenshot + copy)"
+"Delay(Fullscreen + screenshot + copy only)"
+"Delay(Window + screenshot + copy only)"
 "Quit"
 )
 
@@ -87,6 +93,10 @@ function dmenu_sshot() {
 			active_window_sshot ;;
 		"Selected Region(Range)" )
 			selected_region_sshot ;;
+		"Delay(Fullscreen)" )
+			delay_sshot --full ;;
+		"Delay(Window)" )
+			delay_sshot --window ;;
 		"Fullscreen(copy only)" )
 			full_sshot
 			xclip -selection clipboard -t image/png "${sshots_file}"
@@ -99,6 +109,14 @@ function dmenu_sshot() {
 			selected_region_sshot
 			xclip -selection clipboard -t image/png "${sshots_file}"
 			rm "${sshots_file}" ;;
+		"Delay(Fullscreen + copy only)" )
+			delay_sshot --full
+			xclip -selection clipboard -t image/png "${sshots_file}"
+			rm "${sshots_file}" ;;
+		"Delay(Window + copy only)" )
+			delay_sshot --window
+			xclip -selection clipboard -t image/png "${sshots_file}"
+			rm "${sshots_file}" ;;
 		"Fullscreen(screenshot + copy)" )
 			full_sshot
 			xclip -selection clipboard -t image/png "${sshots_file}" ;;
@@ -107,6 +125,12 @@ function dmenu_sshot() {
 			xclip -selection clipboard -t image/png "${sshots_file}" ;;
 		"Selected Region(screenshot + copy)" )
 			selected_region_sshot
+			xclip -selection clipboard -t image/png "${sshots_file}" ;;
+		"Delay(Fullscreen + screenshot + copy only)" )
+			delay_sshot --full
+			xclip -selection clipboard -t image/png "${sshots_file}" ;;
+		"Delay(Window + screenshot + copy only)" )
+			delay_sshot --window
 			xclip -selection clipboard -t image/png "${sshots_file}" ;;
 		"Quit" ) notify-send -t 1500 "Nothing selected for screenshot" ;;
 		*) exit 1;
@@ -124,12 +148,18 @@ function get_help() {
 	echo "                         Fullscreen"
 	echo "                         Active Window"
 	echo "                         Selected Region(Range)"
+	echo "                         Delay(Fullscreen)"
+	echo "                         Delay(Window)"
 	echo "                         Fullscreen(copy only)"
 	echo "                         Active Window(copy only)"
 	echo "                         Selected Region(copy only)"
+	echo "                         Delay(Fullscreen + copy only)"
+	echo "                         Delay(Window + copy only)"
 	echo "                         Fullscreen(screenshot + copy)"
 	echo "                         Active Window(screenshot + copy)"
 	echo "                         Selected Region(screenshot + copy)"
+	echo "                         Delay(Fullscreen + screenshot + copy only)"
+	echo "                         Delay(Window + screenshot + copy only)"
 	echo "                         Quit"
 	echo "  -f,  --full            Take Fullscreen screenshot"
 	echo "  -w,  --window          Take active window screenshot"
