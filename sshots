@@ -1,8 +1,17 @@
 #!/usr/bin/env sh
 
-function get_help() {
-	# write help here
-}
+declare -a sshots_options=(
+"Fullscreen"
+"Active Window"
+"Selected Region(Range)"
+"Fullscreen(copy only)"
+"Active Window(copy only)"
+"Selected Region(copy only)"
+"Fullscreen(screenshot + copy)"
+"Active Window(screenshot + copy)"
+"Selected Region(screenshot + copy)"
+"Quit"
+)
 
 quality=100
 sshots_dir="${HOME}/Pictures/Screenshots/$(date +"%Y-%m")"
@@ -25,53 +34,124 @@ function check_dir() {
 function full_sshot() {
 	check_dir
 	stype="Full"
+	sleep 0.2  # if not dmenu also comes in screenshot
 	maim -u -f png | convert - \
-		\( +clone -background black -shadow 100x5+1+2 \) \
+		\( +clone -background black -shadow 100x8+1+2 \) \
 		-quality 100 +swap -background "${background_frame_color}" \
 		-layers merge +repage "${sshots_file}"
 	post_operation
 }
 
-function window_sshot() {
+function active_window_sshot() {
 	check_dir
 	stype="Window"
 	maim -u -f png -i "$(xdotool getactivewindow)" | convert - \
-		\( +clone -background black -shadow 100x5+1+2 \) \
+		\( +clone -background black -shadow 100x8+1+2 \) \
 		-quality 100 +swap -background "${background_frame_color}" \
-		-layers merge +repage "${sshots_file}"
+		-layers merge +repage "${sshots_file}" 2>/dev/null
 	post_operation
 }
 
-function range_sshot() {
+function selected_region_sshot() {
 	check_dir
 	stype="Range"
 	maim -u -f png -s -t 10 | convert - \
-		\( +clone -background black -shadow 100x5+1+2 \) \
+		\( +clone -background black -shadow 100x8+1+2 \) \
 		-quality 100 +swap -background "${background_frame_color}" \
 		-layers merge +repage "${sshots_file}"
-	post_operation
+		# if you are using any compositor(picom compton), then exclude blur background for slop
+		# blur-background-exclude = [
+			# "class_g = 'slop'",
+		# ];
+	post_operation 2>/dev/null
 }
 
 function delay_sshot() {
 	check_dir
-	if [ "$1" == "--full" ]; then
+	if [ "$1" == "--full" ] || [ "$1" == "-f" ]; then
 		full_sshot
-	elif [ "$1" == "--window" ]; then
-		window_sshot
+	elif [ "$1" == "--window" ] || [ "$1" == "-w" ]; then
+		active_window_sshot
 	else
-		# take full screenshot
-		full_sshot
+		full_sshot # take full screenshot
 	fi
 }
 
-case "$1" in
-	--full|"" ) full_sshot ;;
-	--window ) window_sshot ;;
-	--range ) range_sshot ;;
-	--delay ) shift
-		delay_sshot "$1" ;;
-	--help|-h ) get_help && exit 0 ;;
-	*) echo "give correct argument" && exit 1 ;;
-esac
+function dmenu_sshot() {
+	choice=$(printf '%s\n' "${sshots_options[@]}" | dmenu -i -l "${#sshots_options}" -c -p 'Take Screenshot: ')
 
-# make this work with case statements and try to get input from dmenu also
+	case "${choice}" in
+		"Fullscreen")
+			full_sshot ;;
+		"Active Window" )
+			active_window_sshot ;;
+		"Selected Region(Range)" )
+			selected_region_sshot ;;
+		"Fullscreen(copy only)" )
+			full_sshot
+			xclip -selection clipboard -t image/png "${sshots_file}"
+			rm "${sshots_file}" ;;
+		"Active Window(copy only)" )
+			active_window_sshot
+			xclip -selection clipboard -t image/png "${sshots_file}"
+			rm "${sshots_file}" ;;
+		"Selected Region(copy only)" )
+			selected_region_sshot
+			xclip -selection clipboard -t image/png "${sshots_file}"
+			rm "${sshots_file}" ;;
+		"Fullscreen(screenshot + copy)" )
+			full_sshot
+			xclip -selection clipboard -t image/png "${sshots_file}" ;;
+		"Active Window(screenshot + copy)" )
+			active_window_sshot
+			xclip -selection clipboard -t image/png "${sshots_file}" ;;
+		"Selected Region(screenshot + copy)" )
+			selected_region_sshot
+			xclip -selection clipboard -t image/png "${sshots_file}" ;;
+		"Quit" ) notify-send -t 1500 "Nothing selected for screenshot" ;;
+		*) exit 1;
+	esac
+}
+
+function get_help() {
+	echo "Usage: sshots [option]"
+	echo "Script to take screenshots in various manner"
+	echo ""
+	echo "When no option provided, takes full screen screenshot"
+	echo ""
+	echo "  -dm,  --dmenu          Show dmenu prompt with options to take screenshots"
+	echo "                         Options are:"
+	echo "                         Fullscreen"
+	echo "                         Active Window"
+	echo "                         Selected Region(Range)"
+	echo "                         Fullscreen(copy only)"
+	echo "                         Active Window(copy only)"
+	echo "                         Selected Region(copy only)"
+	echo "                         Fullscreen(screenshot + copy)"
+	echo "                         Active Window(screenshot + copy)"
+	echo "                         Selected Region(screenshot + copy)"
+	echo "                         Quit"
+	echo "  -f,  --full            Take Fullscreen screenshot"
+	echo "  -w,  --window          Take active window screenshot"
+	echo "  -r,  --range           Take selected regions screenshot"
+	echo "  -dl, --delay [-f/-w]   Take screenshot with delay(default: 5 sec)"
+	echo "                         You can give --full/-f or --window/-w option for delay"
+	echo "                         If no option provided it'll take full screen screenshot"
+	echo "  -h,  --help            Show help"
+	echo "Examples:"
+	echo "  sshots --full"
+	echo "  sshots --delay --window"
+	echo ""
+	echo "Assign shortcut keys(key-bindings) to the various options of this script for best usage"
+}
+
+case "$1" in
+	--dmenu|-dm  ) dmenu_sshot ;;
+	--full|-f|"" ) full_sshot ;;
+	--window|-w  ) active_window_sshot ;;
+	--range|-r   ) selected_region_sshot ;;
+	--delay|-dl  ) shift
+		delay_sshot "$1" ;;
+	--help|-h    ) get_help && exit 0 ;;
+	*            ) echo "give correct argument" && exit 1 ;;
+esac
