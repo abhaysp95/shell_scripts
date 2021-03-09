@@ -1,101 +1,77 @@
 #!/usr/bin/env sh
 
 function get_help() {
-	printf "Usage:\tsshots [Option]\n"
-	printf "\t--full:\t\tTake full desktop screenshot\n"
-	printf "\t--window:\tTake screenshot of focused window only\n"
-	printf "\t--specific:\tTake selective screenshot\n"
-	printf "\t--quality NUM:\tProvide quality for image\n"
-	printf "\t--delay NUM:\tTake selective screenshot with delay\n"
-	printf "\t--help:\t\tShow help\n"
-	printf "\nNote: Argument for \"quality\" and \"wait\" is optional\n"
-	printf "By default, they have value 100 and 3 respectively\n"
-	printf "\nWait option is useful when you want to take screenshots
-tools like rofi/dmenu etc.\n"
+	# write help here
 }
 
-if [ -z $2 ]; then
-	quality="100"
-	wait_time="3"
-else
-	echo "inside else"
-	if [ $2 = "--quality" ]; then
-		echo "inside else first if"
-		quality="$3"
-	else
-		echo "inside else first else"
-		wait_time="$3"
-	fi
-	if [ -n $4 ]; then
-		if [ $4 = "--quality" ]; then
-		echo "inside else second if"
-			quality="$5"
-		else
-		echo "inside else second else"
-			wait_time="$5"
-		fi
-	fi
-fi
+quality=100
+sshots_dir="${HOME}/Pictures/Screenshots/$(date +"%Y-%m")"
+sshots_file="${sshots_dir}/$(date +"%Y-%m-%d_%H%M%S").png"
+background_frame_color="#abb2bf"
+delay_time="5"
 
 function post_operation() {
-	sshot_file="$(fd -d 1 -e png scrot $HOME)"
-	if [ -f "${sshot_file}" ]; then
-		folder_name="$(basename $(echo ${sshot_file} | awk -F- '{print $1 "-" $2}'))"
-	else
-		echo "Error! File not found or folder_name not created successfully"
-	fi
-
 	message="$(printf "${stype} type\nScreenshot Captured")"
-	img="$(readlink -f "${sshot_file}")"
+	img="$(readlink -f "${sshots_file}")"
 	notify-send --icon="${img}" -t 3000 "${message}"
-
-	file_save_path="$HOME/Pictures/Screenshots/${folder_name}"
-	[ ! -d "$file_save_path" ] && mkdir -p ${file_save_path}
-
-	mv "${sshot_file}" "${file_save_path}"
 }
 
-function change_dir() {
-	if [ -t 0 ] && [ -t 1 ]; then
-		cd "$HOME"
+function check_dir() {
+	if [ ! -d "${sshots_dir}" ]; then
+		mkdir -p "${sshots_dir}"
 	fi
 }
 
-if [ $1 = "--full" ]; then
-	change_dir
-	scrot -q ${quality} && echo "Took full screenshot"
+function full_sshot() {
+	check_dir
 	stype="Full"
+	maim -u -f png | convert - \
+		\( +clone -background black -shadow 100x5+1+2 \) \
+		-quality 100 +swap -background "${background_frame_color}" \
+		-layers merge +repage "${sshots_file}"
 	post_operation
-elif [ $1 = "--window" ]; then
-	change_dir
-	scrot -q "${quality}" -u && echo "Took window screenshot"
-	stype="Window"
-	post_operation
-elif [ $1 = "--specific" ]; then
-	change_dir
-	pgrep picom && kill $(pidof picom)
-	notify-send "killed picom"
-	scrot -q "${quality}" -s
-	if [ -t 1 ] && [ -t 0 ]; then
-		echo "Specific Screenshot Captured"
-	fi
-	stype="Specific"
-	picom &
-	disown %picom
-	notify-send "started picom"
-	post_operation
-elif [ $1 = "--delay" ]; then
-	change_dir
-	scrot -q "${quality}" -d "${wait_time}"
-	stype="Delay Type"
-	post_operation
-elif [ $1 = "--help" ]; then
-	get_help
-	exit 0
-else
-	echo "Provide Correct Argument"
-	exit 1
-fi
+}
 
+function window_sshot() {
+	check_dir
+	stype="Window"
+	maim -u -f png -i "$(xdotool getactivewindow)" | convert - \
+		\( +clone -background black -shadow 100x5+1+2 \) \
+		-quality 100 +swap -background "${background_frame_color}" \
+		-layers merge +repage "${sshots_file}"
+	post_operation
+}
+
+function range_sshot() {
+	check_dir
+	stype="Range"
+	maim -u -f png -s -t 10 | convert - \
+		\( +clone -background black -shadow 100x5+1+2 \) \
+		-quality 100 +swap -background "${background_frame_color}" \
+		-layers merge +repage "${sshots_file}"
+	post_operation
+}
+
+function delay_sshot() {
+	check_dir
+	if [ "$1" == "--full" ]; then
+		full_sshot
+	elif [ "$1" == "--window" ]; then
+		window_sshot
+	else
+		# take full screenshot
+		full_sshot
+	fi
+}
+
+case "$1" in
+	--full|"" ) full_sshot ;;
+	--window ) window_sshot ;;
+	--range ) range_sshot ;;
+	--delay ) shift
+		delay_sshot "$1" ;;
+	--help|-h ) get_help && exit 0 ;;
+	*) echo "give correct argument" && exit 1 ;;
+esac
 
 # make this work with case statements and try to get input from dmenu also
