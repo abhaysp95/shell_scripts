@@ -106,7 +106,7 @@ function setting_for_pywal() {
 [ "$1" = "--help" ] || [ "$1" == "-h" ] && get_help && exit 0
 
 # if file given, then look no further
-[ -f "$1" ] && \
+[ -f "$1" ] && \  # this check even if you provide the name of directory(fix this too)
 	image_path="$*"
 	cp "$*" "${save_file}" && \
 	write_name "$*" && \
