@@ -1,5 +1,9 @@
 #!/usr/bin/env sh
 
+set -e
+
+trap 'catch $? $LINENO' EXIT
+
 declare -a sshots_options=(
 "Fullscreen"
 "Active Window"
@@ -19,11 +23,33 @@ declare -a sshots_options=(
 "Quit"
 )
 
+declare -a dependencies_run=(
+"fd --version"
+"convert --version"
+"dmenu -v"
+)
+
 quality=100
 sshots_dir="${HOME}/Pictures/Screenshots/$(date +"%Y-%m")"
 sshots_file="${sshots_dir}/$(date +"%Y-%m-%d_%H%M%S").png"
 background_frame_color="#abb2bf"
 delay_time="5"
+
+
+checking_command=""
+
+function catch() {
+	echo "[EE] command not found: ${checking_command}, line no. $2"
+	echo "sshots: exit $1"
+}
+
+function check_dependency() {
+	for cmd in "${dependencies_run[@]}"; do
+		echo "checking: ${cmd}"
+		checking_command="$(echo ${cmd} | cut -d' ' -f1)"
+		${cmd} # do something here
+	done
+}
 
 function post_operation() {
 	message="$(printf "${stype} type\nScreenshot Captured")"
@@ -174,6 +200,9 @@ function get_help() {
 	echo ""
 	echo "Assign shortcut keys(key-bindings) to the various options of this script for best usage"
 }
+
+
+check_dependency  # check the dependencies first
 
 case "$1" in
 	--dmenu|-dm  ) dmenu_sshot ;;
