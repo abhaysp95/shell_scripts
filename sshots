@@ -24,9 +24,9 @@ declare -a sshots_options=(
 )
 
 declare -a dependencies_run=(
-"fd --version"
-"convert --version"
+"maim --version"
 "dmenu -v"
+"convert --version"  # don't know why convert --version is not working
 )
 
 quality=100
@@ -36,8 +36,6 @@ background_frame_color="#abb2bf"
 delay_time="5"
 
 
-checking_command=""
-
 function catch() {
 	echo "[EE] command not found: ${checking_command}, line no. $2"
 	echo "sshots: exit $1"
@@ -45,9 +43,7 @@ function catch() {
 
 function check_dependency() {
 	for cmd in "${dependencies_run[@]}"; do
-		echo "checking: ${cmd}"
-		checking_command="$(echo ${cmd} | cut -d' ' -f1)"
-		${cmd} # do something here
+		eval "${cmd}" 2>&1 >/dev/null
 	done
 }
 
