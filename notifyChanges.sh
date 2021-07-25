@@ -63,7 +63,7 @@ function notificationForLight() {
 
 function runAlertBattery() {
 	while true; do
-		alert_battery.sh --stat
+		alert_battery.sh --critical
 		sleep 1
 	done
 }
