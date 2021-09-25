@@ -1,31 +1,43 @@
 #!/bin/bash
 
-[ ! -d ~/Pictures/portrait_wall ] && mkdir ~/Pictures/portrait_wall
 
 echo "Enter path(doesn't need to include \$HOME): "
 
 read -r foldername
 
+if [ -z "${foldername}" ]; then
+	foldername="$(pwd)"
+	echo "Considering current folder \"${foldername}\" for operation"
+fi
+
+echo "Enter portrait folder path"
+
+read -r new_folder_path
+
+[ ! -d "${new_folder_path}" ] && mkdir -p "${new_folder_path}"
+
 folder_name="$HOME/$foldername"
 
-for name in "$folder_name"/*
-do
-	# echo "$name"
-	width="$(basename "$name" | awk -Fx '{print $1}')"
-	height="$(basename "$name" | awk -Fx '{print $2}')"
-	# echo "width is $width"
-	# echo "height is $height"
+ifs_back="${IFS}"
+IFS=$'\n'
 
-	# could also use [ "$height" -gt "$width" ],
-	# [[ ]] provides advanced comparision
-	if [[ "$height" -gt "$width" ]]
-	then
-		# echo "$name"
-		# echo "height greater than width, name $name"
-		echo "moving $name to ~/Pictures/"
-		mv "$name" ~/Pictures/portrait_wall
-		# move to portrait
-	# else
-	# 	echo "width greater than height"
+for name in $(ls "${foldername}");
+do
+	#res="$(exiv2 $(basename "${name}") | grep 'Image size' | cut -d':' -f2)"
+	#width=$(echo "${res}" | cut -d'x' -f1)
+	#width=${width## }
+	#height=$(echo "${res}" | cut -d'x' -f2)
+	#height=${height## }
+	[ ! -f "${name}" ] && continue
+	res="$(identify -format "%wx%h\n" $(basename "${name}"))"
+	width=$(echo "${res}" | cut -d'x' -f1)
+	height=$(echo "${res}" | cut -d'x' -f2)
+	#echo "width: ${width}, height: ${height}"
+
+	if [ "${height}" -gt "${width}" ]; then
+		echo "moving $name to $new_folder_path"
+		mv "$name" "${new_folder_path}"
 	fi
 done
+
+IFS="${ifs_back}"
