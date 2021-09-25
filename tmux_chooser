@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+function ctrl_c() {
+	echo -e "\renter nil to drop to normal prompt"
+}
+
+trap ctr_c SIGINT
+
+term_count=$(tmux list-sessions | wc -l)
+IFS=$'\n'
+sessions=($(tmux list-sessions))
+session_names=($(tmux list-sessions -F\#S))
+count=1
+
+echo "Chose the term-session to attach: "
+for i in "${sessions[@]}"; do
+	echo "$count - $i"
+	((count++))
+done
+
+echo
+echo "Create a new session by entering a name for it"
+read -r choice
+if [[ "${choice}" == "" ]]; then
+	tmux new-session
+elif [[ "${choice}" =~ ^[0-9]+$ ]] && [[ "${choice}" -le "${term_count}" ]]; then
+	choice_name="${session_names[choice - 1]}"
+	tmux attach -t "${choice_name}"
+else
+	tmux new-session -s "${choice}"
+fi
+exit 0
