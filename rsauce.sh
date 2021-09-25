@@ -16,7 +16,8 @@ function mdownload() {
 	url="${def_url}${mtitle}"
 	for idx in $(seq ${start_from} ${end_to}); do
 		echo "==> downloading ${mtitle}_${idx}"
-		wget -q --show-progress -O "${mtitle}_${idx}.zip" "${url}_${idx}"
+		#wget -q --show-progress -O "${mtitle}_${idx}.zip" "${url}_${idx}"
+		wget --show-progress -O "${mtitle}_${idx}.zip" "${url}_${idx}"
 		echo "file downloaded"
 		echo
 	done
