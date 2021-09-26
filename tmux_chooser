@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+exec 2>/dev/null  # error redirection(script-wide)
+# or you can just put those commands in a function
+# and redirect stderr after the function body
+
 function ctrl_c() {
 	echo -e "\renter nil to drop to normal prompt"
 }
@@ -12,20 +16,24 @@ sessions=($(tmux list-sessions))
 session_names=($(tmux list-sessions -F\#S))
 count=1
 
-echo "Chose the term-session to attach: "
-for i in "${sessions[@]}"; do
-	echo "$count - $i"
-	((count++))
-done
+if [ -n "${term_count}" ] && [ "${term_count}" -gt 0 ]; then
+	echo "Chose the term-session to attach: "
+	for i in "${sessions[@]}"; do
+		echo "$count - $i"
+		((count++))
+	done
+	echo
+fi
 
-echo
-echo "Create a new session by entering a name for it"
+echo "Create a new session by entering a name for it: "
 read -r choice
 if [[ "${choice}" == "" ]]; then
 	tmux new-session
 elif [[ "${choice}" =~ ^[0-9]+$ ]] && [[ "${choice}" -le "${term_count}" ]]; then
 	choice_name="${session_names[choice - 1]}"
 	tmux attach -t "${choice_name}"
+elif [[ "${choice}" == "nil" ]]; then
+	exit 1
 else
 	tmux new-session -s "${choice}"
 fi
