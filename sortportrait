@@ -1,43 +1,45 @@
 #!/bin/bash
 
+path_from=""
+path_to=""
 
-echo "Enter path(doesn't need to include \$HOME): "
+echo "Enter path containg files/directories(No input will consider cwd): "
+read -r path_from
 
-read -r foldername
-
-if [ -z "${foldername}" ]; then
-	foldername="$(pwd)"
-	echo "Considering current folder \"${foldername}\" for operation"
+if [ -z "${path_from}" ]; then
+	path_from="$(pwd)"
 fi
 
-echo "Enter portrait folder path"
 
-read -r new_folder_path
+echo "Enter path to create new directory to put these sorted files/directories: "
+echo "[entered path will be relative to current directory]"
+read -r path_to
+while [ -z "${path_to}" ]; do
+	echo "Destination path not entered. Try again[press Ctrl-c to quit]"
+	echo "Enter path to create new directory to put these sorted files/directories: "
+	echo "[entered path will be relative to current directory]"
+	read -r path_to
+done
 
-[ ! -d "${new_folder_path}" ] && mkdir -p "${new_folder_path}"
+[ ! -d "${path_to}" ] && mkdir -p "${path_to}"
 
-folder_name="$HOME/$foldername"
 
-ifs_back="${IFS}"
+backup_IFS="${IFS}"
 IFS=$'\n'
 
-for name in $(ls "${foldername}");
-do
-	#res="$(exiv2 $(basename "${name}") | grep 'Image size' | cut -d':' -f2)"
-	#width=$(echo "${res}" | cut -d'x' -f1)
-	#width=${width## }
-	#height=$(echo "${res}" | cut -d'x' -f2)
-	#height=${height## }
+for name in $(ls "${path_from}"); do
 	[ ! -f "${name}" ] && continue
 	res="$(identify -format "%wx%h\n" $(basename "${name}"))"
 	width=$(echo "${res}" | cut -d'x' -f1)
 	height=$(echo "${res}" | cut -d'x' -f2)
 	#echo "width: ${width}, height: ${height}"
+	printf "width: %5s, height: %5s" ${width} ${height}
 
 	if [ "${height}" -gt "${width}" ]; then
-		echo "moving $name to $new_folder_path"
-		mv "$name" "${new_folder_path}"
+		printf " [ moving: %s to %s ]" ${name} ${path_to}
+		mv "$name" "${path_to}"
 	fi
+	echo
 done
 
-IFS="${ifs_back}"
+IFS=${backup_IFS}
