@@ -22,6 +22,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m'
 
 input_provided="$*"
+echo "input provided: ${input_provided}"
 music_format="${input_provided##* }"
 music_name="$(printf "%s\n" "${input_provided//${music_format}/}" | sed 's/ *$//')"
 
