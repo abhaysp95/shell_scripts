@@ -27,7 +27,9 @@ done
 backup_IFS="${IFS}"
 IFS=$'\n'
 
-for name in $(ls "${path_from}"); do
+find_files=$(find ${path_from} -maxdepth 1 -type f -iname "*.png" -o -iname "*.jpg" -o -iname "*.jpeg")
+
+for name in ${find_files}; do
 	[ ! -f "${name}" ] && continue
 	res="$(identify -format "%wx%h\n" $(basename "${name}"))"
 	width=$(echo "${res}" | cut -d'x' -f1)
@@ -36,10 +38,14 @@ for name in $(ls "${path_from}"); do
 	printf "width: %5s, height: %5s" ${width} ${height}
 
 	if [ "${height}" -gt "${width}" ]; then
-		printf " [ moving: %s to %s ]" ${name} ${path_to}
+		printf " [ moving: %s to %s ]" $(basename ${name}) ${path_to}
 		mv "$name" "${path_to}"
 	fi
+
 	echo
 done
+
+find "${path_to}" -maxdepth 0 -empty -exec echo {} is empty. Removing the directory \; \
+	&& rmdir "${path_to}" 2>/dev/null
 
 IFS=${backup_IFS}
