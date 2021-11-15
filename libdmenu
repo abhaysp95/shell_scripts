@@ -72,17 +72,19 @@ setup_vars_for_pdfs() {
 	# add the dir names to file provided here to exclude from search
 	exclude_pdfs="${HOME}/.cache/temp/exclude_pdf_dirs.txt"
 	ext_pdf_array=( "pdf" )  # provide extension for pdf type to search
-	readarray -t exclude_pdf_dirs < "${exclude_pdfs}"
-	exclude_pdf_args=()
-	find_pdf_extensions=()
+
+	# these lines are for --exclude-pattern (now, this script uses --ignore-file flag)
+	#readarray -t exclude_pdf_dirs < "${exclude_pdfs}"
+	#exclude_pdf_args=()
+	#find_pdf_extensions=()
 }
 
 search_pdfs() {
 	setup_vars_for_pdfs
-	for names in "${exclude_pdf_dirs[@]}"; do
+	#for names in "${exclude_pdf_dirs[@]}"; do
 		# add -E(--exclude) flag for fd
-		exclude_pdf_args+=("-E" "${names}")
-	done
+		#exclude_pdf_args+=("-E" "${names}")
+	#done
 
 	for ext in "${ext_pdf_array[@]}"; do
 		# add -e(to search only provided file extension)
@@ -94,8 +96,11 @@ search_pdfs() {
 		#"${find_pdf_extensions[@]}" \
 		#"${HOME}/Documents" "${HOME}/Downloads"
 
+	echo "${exclude_pdfs}"
+
 	# search the pdfs
-	(fd . -u "${exclude_pdf_args[@]}" \
+	#(fd . -u "${exclude_pdf_args[@]}" \
+	(fd . -u --ignore-file "${exclude_pdfs}" \
 		--type f \
 		"${find_pdf_extensions[@]}" \
 		"${HOME}/Documents" \
@@ -116,17 +121,19 @@ setup_var_for_videos() {
 	exclude_videos="${HOME}/.cache/temp/exclude_video_dirs.txt"
 	# provide extension for video type to search
 	ext_video_array=( "mp4" "mkv" "webm" )
-	readarray -t exclude_video_dirs < "${exclude_videos}"
-	exclude_video_args=()
-	find_video_extensions=()
+
+	# these lines are for --exclude-pattern (now, this script uses --ignore-file flag)
+	#readarray -t exclude_video_dirs < "${exclude_videos}"
+	#exclude_video_args=()
+	#find_video_extensions=()
 }
 
 search_videos() {
 	setup_var_for_videos
-	for names in "${exclude_video_dirs[@]}"; do
-		# add -E(--exclude) flag for fd to exclude dirs
-		exclude_video_args+=("-E" "${names}")
-	done
+	#for names in "${exclude_video_dirs[@]}"; do
+		 #add -E(--exclude) flag for fd to exclude dirs
+		#exclude_video_args+=("-E" "${names}")
+	#done
 
 	for ext in "${ext_video_array[@]}"; do
 		# add -e(to search by file extension)
@@ -134,12 +141,15 @@ search_videos() {
 	done
 
 	# search for the videos(for testing, ran this in terminal)
+	#echo "fd . -u ${exclude_video_args[@]} --type f ${find_video_extensions[@] }"
+
 	#fd . -u "${exclude_video_args[@]}" --type f \
 		#"${find_video_extensions[@]}" \
 		#"${HOME}/Videos" "${HOME}/Downloads"
 
 	# search the videos
-	(fd . -u "${exclude_video_args[@]}" \
+	#(fd . -u "${exclude_video_args[@]}" \
+	(fd . -u --ignore-file "${exclude_videos}" \
 		--type f \
 		"${find_video_extensions[@]}" \
 		"${HOME}/Videos" \
