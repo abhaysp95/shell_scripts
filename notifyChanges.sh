@@ -58,7 +58,7 @@ function notificationForLight() {
 	bright=$(light -G)
 	dunstify -a "changeLight" -r "$brightMsgId" \
 		--icon="~/.cache/notify-icons/yellow-bulb.png" -t 5000 \
-		"Brightness: ${bright}%" "$(getProgressString.sh 10 "" "——" "${bright}")"
+		"Brightness: ${bright}%" "$(getProgressString.sh 10 "==" "——" "${bright}")"
 }
 
 function runAlertBattery() {
