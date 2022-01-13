@@ -14,7 +14,7 @@ function conn_name() {
 	elif [ -n "${wifi_name}" ] && [ -n "${eth_name}" ]; then
 		printf " %s  %s" "${eth_name}" "${wifi_name}"
 	else
-		printf "  "
+		printf " "
 		conn_status=false
 	fi
 }
@@ -52,14 +52,17 @@ function get_speed() {
 	logdir=${XDG_CACHE_HOME:-$HOME/.cache}/net
 	logfile=${XDG_CACHE_HOME:-$HOME/.cache}/net/log
 
-	[ ! -d "${logdir}" ] && \
-		mkdir -p "${logdir}" && \
+	curr_rx="$(( $(cat /sys/class/net/*/statistics/rx_bytes | paste -sd '+') ))"
+	curr_tx="$(( $(cat /sys/class/net/*/statistics/tx_bytes | paste -sd '+') ))"
+
+	if [ ! -d "${logdir}" ]; then
+		mkdir -p "${logdir}"
 		touch "${logfile}"
+		echo "${curr_rx} ${curr_tx}" >> "${logfile}"
+	fi
 
 	prevdata="$(cat "${logfile}")"
 
-	curr_rx="$(( $(cat /sys/class/net/*/statistics/rx_bytes | paste -sd '+') ))"
-	curr_tx="$(( $(cat /sys/class/net/*/statistics/tx_bytes | paste -sd '+') ))"
 
 	#echo "curr_rx: ${curr_rx}, curr_tx: ${curr_tx}"
 
