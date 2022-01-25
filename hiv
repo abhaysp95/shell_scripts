@@ -1,0 +1,223 @@
+#!/bin/bash
+
+# unset EDITOR
+# EDITOR="nvim"  # change this to exec path of editor or your preffered editor (vi/vim/nvim)
+
+
+R='\033[1;31m'
+B='\033[1;34m'
+C='\033[1;36m'
+G='\033[1;32m'
+WB='\033[1;37m'
+WN='\033[;37m'
+Y='\033[1;33m'
+
+function getmanname() {
+    man -k . | \
+	fzf | \
+	awk '{print $1}'
+}
+
+function getshufman() {
+	getname=$(fd . --type f /usr/share/man/man1 \
+		| shuf \
+		| head -n 1)
+	propername=$(basename "${getname}" \
+		| sed 's/.1.gz//g')
+	echo "${propername}"
+}
+
+function viman() {
+  if [ 0 -eq $# ]; then
+    echo -e "${R}EE: ${WN}No argument provided for man page"
+    exit 1;
+  elif [ $# -gt 1 ]; then
+    echo -e "${Y}WW: ${WN}Will only open \"$1\", and rest will be ignored"
+  fi
+  text=$(man $@ 2>/dev/null)
+  if [ 0 -eq $? ]; then
+    echo "${text}" \ | "${EDITOR}" -R +":set ft=man" - ;
+  else
+    echo -e "${R}EE: ${WN}man page not found for ${B}\"$@\"${WN}"
+  fi
+}
+
+function man_handler() {
+  unset OPTIND
+  local got_man=0
+  if [ $# != 0 ]; then
+    local opt
+    # using if(instead of while), cause I don't need to process multiple flags
+    if getopts ":srh" opt; then
+      case "${opt}" in
+        s)
+          got_man=1
+          viman "$(getmanname)";;
+        r)
+          got_man=1
+          viman "$(getshufman)";;
+        h)
+          helper_man; exit 0;;
+        \?)
+          echo -e "${R}EE: ${WN}invalid(man): ${B}-${OPTARG}${WN}";
+          helper_man; exit 1;;
+        *)
+      esac
+    fi
+    shift $((OPTIND -1))
+
+    if [ 0 -eq "${got_man}" ]; then
+      viman $@
+    fi
+  else
+    helper_man
+    exit 0;
+  fi
+}
+
+function vigodoc() {
+  if [ 0 -eq $# ]; then
+    echo -e "${R}EE: ${WN}No argument provided for \"go doc\""
+    exit 1;
+  fi
+  text=$( { go doc $@; } 2>&1 )  # not forwarding stderr to /dev/null cause it is useful here
+  if [ 0 -eq $? ]; then
+    # you can also set filetype (ft) to "godoc", but using "go" makes color highlighting look better
+    echo "${text}" \ | "${EDITOR}" -R +":set ft=go" - ;
+  else
+    echo -e "${R}EE: ${WN}invalid argument/s: \"${B}$@\"${WN}"
+    echo -e "${R}EE: ${WN}$(echo ${text} | head -n 1)"
+  fi
+}
+
+function godoc_handler() {
+  unset OPTIND
+  local got_doc=0
+  if [ $# != 0 ]; then
+    local opt arg
+    # using if(instead of while), cause I don't need to process multiple flags
+    if getopts ":a:c:u:srh" opt; then
+      shift
+      got_doc=1
+      case "${opt}" in
+        a)
+          arg=" -all $@"  # not using ${OPTARG}
+          vigodoc "${arg}";;  # not using break (because it is not loop but if block)
+        s)
+          echo -e "${C}Option(for shuffle) will be implemented soon${WN}"
+          exit 0
+          ;;
+        u)
+          arg=" -u $@"
+          vigodoc "${arg}";;
+        r)
+          echo -e "${C}Option(for random) will be implemented soon${WN}"
+          exit 0
+          ;;
+        c)
+          arg=" -src $@"
+          vigodoc "${arg}";;
+        h)
+          helper_godoc; exit 0;;
+        \?)
+          echo -e "${R}EE: ${WN}invalid argument: ${B}-${OPTARG}${WN}";
+          helper_godoc; exit 0;;
+        :)
+          echo -e "${R}EE: ${WN}invalid argument: ${B}-${OPTARG}${WN} requires argument/s";
+          helper_godoc; exit 0;;
+      esac
+    fi
+    shift $(( OPTIND -1 ))
+
+    if [ 0 -eq "${got_doc}" ]; then
+      vigodoc $@
+    fi
+  else
+    helper_godoc
+  fi
+}
+
+function subcommand_handler() {
+  subcommand=$1
+  shift  # consume subcommand
+  case "${subcommand}" in
+    man)
+      man_handler $@; exit 0;;
+    godoc)
+      godoc_handler $@; exit 0;;
+    *)
+      ;;
+  esac
+}
+
+function main() {
+  if [ $# != 0 ]; then
+    while getopts ":h" opt; do
+      case $opt in
+        h)
+          helper; exit 0;;
+        \?)
+          echo "${R}EE: ${WN}invalid ${B}-${OPTARG}${WN}"
+          echo
+          helper; exit 1;;
+      esac
+    done
+    shift $((OPTIND - 1))
+
+    subcommand_handler $@
+  else
+    helper
+  fi
+}
+
+function helper() {
+  printf '%s\n' 'hiv is helper showing help in vim (and its variants)' \
+'
+Usage:
+
+        hiv <command|-h> [argument]
+
+Commands:
+        man               for showing help related to "man" pages
+        godoc             for showing help related to "go doc"
+
+Flags:
+        -h                show help
+
+Use "hiv <command> [-h] for more information about a command" '
+}
+
+function helper_man() {
+  printf '%s\n' 'hiv man:' \
+'
+Usage:
+
+        hiv man [flags] <symbol>
+
+Flags:
+        -s                fuzzy selection from differnt "man" pages
+        -r                random open a "man" page
+        -h                show help'
+}
+
+function helper_godoc() {
+  printf '%s\n' 'hiv godoc:' \
+'
+Usage:
+
+        hiv godoc [flags] [package|[package.]symbol[.methodOrField]]
+
+Flags:
+        -a              show all documentation for package
+        -u              show unexported symbols as well as exported
+        -c              show source code for symbol
+        -r              random open a package doc (implementaion left)
+        -s              fuzzy selection from available package doc (implementation left)
+        -h              show help
+
+Examples:
+        Run \"go help doc" in terminal for seeing how to pass arguments'
+
+}
+
+main $@
