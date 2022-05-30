@@ -21,18 +21,22 @@ wallpaperset=0
 wallpaper_setter=""
 wallpaper_setter_args=""
 
-if [ $(which wal 2>/dev/null) != "wal not found" ]; then
+if [[ $(which wal 2>/dev/null) == "wal not found" ]]; then
+  if [[ $(which nitrogen 2>/dev/null) == "nitrogen not found" ]]; then
+    if [[ $(which feh 2>/dev/null) == "feh not found" ]]; then
+      echo "Install a wallpaper setter"
+      exit 1
+    else
+      wallpaper_setter="feh"
+      wallpaper_setter_args="--bg-fil"
+    fi
+  else
+    wallpaper_setter="nitrogen"
+    wallpaper_setter_args="--set-zoom-fill"
+  fi
+else
 	wallpaper_setter="wal"
 	wallpaper_setter_args="-i"
-elif [ "$(which nitrogen 2>/dev/null)" != "nitrogen not found" ]; then
-	wallpaper_setter="nitrogen"
-	wallpaper_setter_args="--set-zoom-fill"
-elif [ "$(which feh 2>/dev/null)" != "feh not found" ]; then
-	wallpaper_setter="feh"
-	wallpaper_setter_args="--bg-fil"
-else
-	echo "Install a wallpaper setter"
-	exit 1
 fi
 echo "Wallpaper Setter is: ${wallpaper_setter}"
 
