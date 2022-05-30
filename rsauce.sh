@@ -53,7 +53,8 @@ for idx in $(seq ${start_from} ${end_to}); do
 		continue
 	fi
 	unzip "${folder_name}.zip" -d "${folder_name}" 1>/dev/null && echo "====> unzipped folder ${folder_name}"
-	convert $(find "${folder_name}" -type f -iname "${mtitle}*.jpg" | sort -k "${sort_col}" -n -t "${delim}") "${pdf_folder}/${folder_name}.pdf"
+	# convert $(find "${folder_name}" -type f -iname "${mtitle}*.jpg" | sort -k "${sort_col}" -n -t "${delim}") "${pdf_folder}/${folder_name}.pdf"
+  img2pdf --pagesize A4 -o "${pdf_folder}/${folder_name}.pdf" $(find "${folder_name}" -type f -iname "${mtitle}*.jpg" | sort -k "${sort_col}" -n -t "${delim}")
 	echo "==> pdf at ${pdf_folder}/${folder_name}.pdf created"
 	[ -d "${folder_name}" ] && rm -r "${folder_name}" && echo "Folder ${folder_name} removed"
 	echo
