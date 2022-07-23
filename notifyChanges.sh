@@ -50,9 +50,10 @@ function notificationForVolume() {
 		# show the volume notification
 		dunstify -a "changeVol" -i audio-volume-high -r "$volMsgId" \
 			--icon="~/.cache/notify-icons/speaker.png" -t 5000 \
-			"Volume: ${volume}%" "$(getProgressString.sh 10 " " " " "${volume}")"
+			"Volume: ${volume}%" "$(getProgressString.sh 10 "⬤ " "◯ " "${volume}")"
 	fi
 }
+#  
 
 function notificationForLight() {
 	bright=$(light -G)
