@@ -21,23 +21,47 @@ wallpaperset=0
 wallpaper_setter=""
 wallpaper_setter_args=""
 
-if [[ $(which wal 2>/dev/null) == "wal not found" ]]; then
-  if [[ $(which nitrogen 2>/dev/null) == "nitrogen not found" ]]; then
-    if [[ $(which feh 2>/dev/null) == "feh not found" ]]; then
-      echo "Install a wallpaper setter"
-      exit 1
-    else
-      wallpaper_setter="feh"
-      wallpaper_setter_args="--bg-fil"
-    fi
-  else
-    wallpaper_setter="nitrogen"
-    wallpaper_setter_args="--set-zoom-fill"
-  fi
+# this logic was written for zsh (but I run my shell scripts using bash)
+
+which wal 2>/dev/null
+if [ "$?" -eq 1 ]; then
+	which nitrogen 2>/dev/null
+	if [ "$?" -eq 1 ]; then
+		which nitrogen 2>/dev/null
+		if [ "$?" -eq 1 ]; then
+			echo "Install a wallpaper setter"
+			exit 1
+		else
+			wallpaper_setter="feh"
+			wallpaper_setter_args="--bg-fill"
+		fi
+	else
+		wallpaper_setter="nitrogen"
+		wallpaper_setter_args="--set-zoom-fill"
+	fi
 else
 	wallpaper_setter="wal"
 	wallpaper_setter_args="-i"
 fi
+
+# if [[ $(which wal 2>/dev/null) == "wal not found" ]]; then
+# 	echo "here"
+#   if [[ $(which nitrogen 2>/dev/null) == "nitrogen not found" ]]; then
+#     if [[ $(which feh 2>/dev/null) == "feh not found" ]]; then
+#       echo "Install a wallpaper setter"
+#       exit 1
+#     else
+#       wallpaper_setter="feh"
+#       wallpaper_setter_args="--bg-fil"
+#     fi
+#   else
+#     wallpaper_setter="nitrogen"
+#     wallpaper_setter_args="--set-zoom-fill"
+#   fi
+# else
+# 	wallpaper_setter="wal"
+# 	wallpaper_setter_args="-i"
+# fi
 echo "Wallpaper Setter is: ${wallpaper_setter}"
 
 # help menu
