@@ -1,0 +1,34 @@
+#!/bin/bash
+
+local_db="$HOME/.cache/temp/bkmrkdb.csv"
+
+function bkmrkToDB() {
+	url=$(xclip -o)
+	echo "got url: ${url}"
+
+	echo "${url}," 1>> "${local_db}"
+}
+
+function titleDialog() {
+	url=$(xclip -o)
+	echo "got url: ${url}"
+
+	title="$(zenity --entry \
+		--text="Enter bookmark title")"
+
+	echo "${url}, ${title}" >> "${local_db}"
+}
+
+function getBkmrk() {
+	cat "${local_db}" \
+		| dmenu -p "Bookmark: " -l 20 -c -i \
+		| cut -d, -f1 \
+		| xclip -selection clipboard
+}
+
+case "$1" in
+	"") bkmrkToDB ;;
+	"--title") titleDialog ;;
+	"--get") getBkmrk ;;
+	*) echo "only \"--title\" flag supported" ;;
+esac
