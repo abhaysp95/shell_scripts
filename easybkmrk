@@ -1,34 +1,65 @@
 #!/bin/bash
 
+# TODO: update so that, script knows it's run from tty and output there,
+# instead of notification
+
 local_db="$HOME/.cache/temp/bkmrkdb.csv"
 
 function bkmrkToDB() {
 	url=$(xclip -o)
-	echo "got url: ${url}"
 
+	if [ -z "${url}" ]; then
+		dunstify -a "easyBookmark" \
+			--icon="~/.cache/notify-icons/bookmark.png" \
+			"Easy Bookmark" "Nothing to bookmark"
+		exit 0
+	fi
+
+	# echo "got url: ${url}"
 	echo "${url}," 1>> "${local_db}"
+
+	dunstify -a "easyBookmark" \
+		--icon="~/.cache/notify-icons/bookmark-check.png" \
+		"URL bookmarked" "${url}"
 }
 
 function titleDialog() {
 	url=$(xclip -o)
-	echo "got url: ${url}"
+	# echo "got url: ${url}"
+
+	if [ -z "${url}" ]; then
+		dunstify -a "easyBookmark" \
+			--icon="~/.cache/notify-icons/bookmark.png" \
+			"Easy Bookmark" "Nothing to bookmark"
+		exit 0
+	fi
 
 	title="$(zenity --entry \
 		--text="Enter bookmark title")"
 
 	echo "${url}, ${title}" >> "${local_db}"
+
+	dunstify -a "easyBookmark" \
+		--icon="~/.cache/notify-icons/bookmark-check.png" \
+		"URL bookmarked" "${url}\n<b>Title:</b>${title}"
 }
 
 function getBkmrk() {
-	cat "${local_db}" \
+	res_bkmrk = "$(cat "${local_db}" \
 		| dmenu -p "Bookmark: " -l 20 -c -i \
-		| cut -d, -f1 \
+		| cut -d, -f1)"
+	echo "${res_bkmrk}" \
 		| xclip -selection clipboard
+
+	dunstify -a "easyBookmark" \
+		--icon="~/.cache/notify-icons/bookmark-star.png" \
+		"Bookmark Copied" "${res_bkmrk}"
 }
 
 case "$1" in
 	"") bkmrkToDB ;;
 	"--title") titleDialog ;;
 	"--get") getBkmrk ;;
+	"-h") echo "Will update help later" ;;
 	*) echo "only \"--title\" flag supported" ;;
 esac
