@@ -45,7 +45,7 @@ function titleDialog() {
 }
 
 function getBkmrk() {
-	res_bkmrk = "$(cat "${local_db}" \
+	res_bkmrk="$(cat "${local_db}" \
 		| dmenu -p "Bookmark: " -l 20 -c -i \
 		| cut -d, -f1)"
 	echo "${res_bkmrk}" \
