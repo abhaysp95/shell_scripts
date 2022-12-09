@@ -62,11 +62,19 @@ function titleDialog() {
 }
 
 function getBkmrk() {
-	res_bkmrk="$(cat "${local_db}" \
+	local res_bkmrk="$(cat "${local_db}" \
 		| dmenu -p "Bookmark: " -l 20 -c -i \
-		| cut -d, -f1)"
+		| cut -d, -f2)"
 	echo "${res_bkmrk}" \
 		| xclip -selection clipboard
+
+	if [ -z "${res_bkmrk}" ]; then
+		res_bkmrk="You've not selected any bookmark"
+		dunstify -a "easyBookmark" \
+			--icon="~/.cache/notify-icons/bookmark.png" \
+			"Bookmark not copied" "${res_bkmrk}"
+		return
+	fi
 
 	dunstify -a "easyBookmark" \
 		--icon="~/.cache/notify-icons/bookmark-star.png" \
