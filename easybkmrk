@@ -7,7 +7,7 @@ local_db="$HOME/.cache/temp/bkmrkdb.csv"
 
 # get the s.no.
 function get_sno() {
-	local count=0
+	local count=1
 	if [ -f "${local_db}" ]; then
 		count=$(tail -1 "${local_db}" | cut -d, -f1)
 		count=$(( count + 1 ))
