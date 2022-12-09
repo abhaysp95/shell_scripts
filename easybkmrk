@@ -5,8 +5,19 @@
 
 local_db="$HOME/.cache/temp/bkmrkdb.csv"
 
+# get the s.no.
+function get_sno() {
+	local count=0
+	if [ -f "${local_db}" ]; then
+		count=$(tail -1 "${local_db}" | cut -d, -f1)
+		count=$(( count + 1 ))
+	fi
+
+	echo "${count}"
+}
+
 function bkmrkToDB() {
-	url=$(xclip -o)
+	local url=$(xclip -o)
 
 	if [ -z "${url}" ]; then
 		dunstify -a "easyBookmark" \
@@ -15,8 +26,11 @@ function bkmrkToDB() {
 		exit 0
 	fi
 
+	# get serial no.
+	local count=$(get_sno)
+
 	# echo "got url: ${url}"
-	echo "${url}," 1>> "${local_db}"
+	echo "${count},${url}," 1>> "${local_db}"
 
 	dunstify -a "easyBookmark" \
 		--icon="~/.cache/notify-icons/bookmark-check.png" \
@@ -24,7 +38,7 @@ function bkmrkToDB() {
 }
 
 function titleDialog() {
-	url=$(xclip -o)
+	local url=$(xclip -o)
 	# echo "got url: ${url}"
 
 	if [ -z "${url}" ]; then
@@ -34,10 +48,13 @@ function titleDialog() {
 		exit 0
 	fi
 
+	# get serial no.
+	local count=$(get_sno)
+
 	title="$(zenity --entry \
 		--text="Enter bookmark title")"
 
-	echo "${url}, ${title}" >> "${local_db}"
+	echo "${count},${url},${title}" >> "${local_db}"
 
 	dunstify -a "easyBookmark" \
 		--icon="~/.cache/notify-icons/bookmark-check.png" \
