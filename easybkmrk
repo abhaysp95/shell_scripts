@@ -3,6 +3,9 @@
 # TODO: update so that, script knows it's run from tty and output there,
 # instead of notification
 
+backup_ifs="${IFS}"
+IFS=$'\n'
+
 local_db="$HOME/.cache/temp/bkmrkdb.csv"
 
 # get the s.no.
@@ -61,6 +64,45 @@ function titleDialog() {
 		"URL bookmarked" "${url}\n<b>Title:</b>${title}"
 }
 
+function delBkmrk() {
+	local res_bkmrk="$(cat "${local_db}" \
+		| dmenu -p "Bookmark: " -l 20 -c -i)"
+
+	if [ -z "${res_bkmrk}" ]; then
+		res_bkmrk="No bookmark selected"
+		dunstify -a "easyBookmark" \
+			--icon="~/.cache/notify-icons/warning.png" \
+			"Operation failed" "${res_bkmrk}"
+		return
+	fi
+
+	local s_no="$(echo ${res_bkmrk} | cut -d, -f1)"
+
+	if [ -z "${s_no}" ]; then
+		dunstify -a "easyBookmark" \
+			--icon="~/.cache/notify-icons/warning.png" \
+			"Operation failed" "Error parsing the bookmark file"
+		return 1
+	fi
+
+	# delete that line
+	sed -i "${s_no}d" "${local_db}"
+
+	# if the deleted line was last line, return
+	[[ "$(wc -l ${local_db})" < "${s_no}" ]] && return 0
+
+	# append this after s_no - 1 line (line is working)
+	local before_change=$(head -"$(expr ${s_no} - 1)" "${local_db}")
+	# the below one does work, but if I'm changing the file anyways, why not just use awk
+	# gawk -i inplace -F, -v SNO="${s_no}" 'NR >= SNO { $1 = $1 - 1; print $0 }' "${local_db}"
+	local from_change=$(awk -F, -v SNO="${s_no}" 'NR >= SNO { $1 = $1 - 1; printf("%d,%s,%s\n", $1, $2, $3) }' "${local_db}")
+	if [ -z "${before_change}" ]; then
+		echo "${from_change}" > "${local_db}"
+	else
+		printf "%s\n%s\n" "${before_change}" "${from_change}" > "${local_db}"
+	fi
+}
+
 function getBkmrk() {
 	local res_bkmrk="$(cat "${local_db}" \
 		| dmenu -p "Bookmark: " -l 20 -c -i \
@@ -85,6 +127,17 @@ case "$1" in
 	"") bkmrkToDB ;;
 	"--title") titleDialog ;;
 	"--get") getBkmrk ;;
+	"--del") delBkmrk ;;
 	"-h") echo "Will update help later" ;;
 	*) echo "only \"--title\" flag supported" ;;
 esac
+
+IFS="${backup_ifs}"
+
+	# local count="${s_no}"
+	# while read ln; do
+	# 	# echo "s_no: ${count}"
+	# 	ln=$(echo ${ln} | sed -E "s/^([0-9]*),/\1ab,/")
+	# 	# count=$(( count + 1 ))
+	# 	echo "=> ${ln}"
+	# done < <(tail +"${s_no}" "${local_db}")  # process substitution to read output from tail
