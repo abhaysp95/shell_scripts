@@ -101,6 +101,9 @@ function delBkmrk() {
 	else
 		printf "%s\n%s\n" "${before_change}" "${from_change}" > "${local_db}"
 	fi
+
+	# this could work, though you've to make change in the lines array itself, not $1 (cause they only work on action block)
+	# awk -F, -v SNO="${s_no}" ' { lines[NR] = $0 } END { i = SNO; while (i <= NR) { $1 = $1 - 1; print lines[i]; i = i + 1 } } ' "${local_db}"
 }
 
 function getBkmrk() {
