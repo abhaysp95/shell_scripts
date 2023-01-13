@@ -13,6 +13,9 @@ batteryMsgId="991052"
 
 bsfile="$HOME/.cache/temp/bsfile"
 if [ ! -f "${bsfile}" ]; then
+	if [ ! -d "$(dirname ${bsfile})" ]; then
+		mkdir -p "$(dirname ${bsfile})"
+	fi
 	touch "$bsfile"
 	echo "0 Charged" > "${bsfile}"
 fi
