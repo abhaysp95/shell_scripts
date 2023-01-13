@@ -88,6 +88,10 @@ function delBkmrk() {
 	# delete that line
 	sed -i "${s_no}d" "${local_db}"
 
+	dunstify -a "easyBookmark" \
+		--icon="~/.cache/notify-icons/bookmark-red.png" \
+		"Deleted" "$(echo ${res_bkmrk} | cut -d, -f2)"
+
 	# if the deleted line was last line, return
 	[[ "$(wc -l ${local_db})" < "${s_no}" ]] && return 0
 
