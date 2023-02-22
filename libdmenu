@@ -160,12 +160,22 @@ search_videos() {
 		| xargs -0 -I {} mpv "{}"
 }
 
+function browser_profiles() {
+	local prof_selected="$(cat ~/.mozilla/firefox/profiles.ini \
+		| grep Name | cut -d'=' -f2 \
+		| dmenu -i -c -l 10 -p 'Select profile: ')"
+
+	[ ! -z "${prof_selected}" ] \
+		&& firefox -P "${prof_selected}"
+}
+
 global_choice=""
 show_all_options() {
 	all_choices=$(printf "%s\n%s\n%s\n" \
 		"man search - search for man pages available" \
 		"pdfs search - search for pdfs available" \
 		"videos search - search for videos available" \
+		"bprofiles - open firefox with selected profile" \
 		#"vim-help search - search for help pages from vim" \  # still incomplete
 		| dmenu -l 20 -i -c)
 	global_choice+="$(echo "${all_choices}" | awk '{print $1}')"
@@ -180,6 +190,7 @@ if_first_arg_provided() {
 			esac;;
 		pdfs) search_pdfs;;
 		videos) search_videos;;
+		bprofiles) browser_profiles;;
 		vim-help) search_vim_help;;
 	esac
 }
