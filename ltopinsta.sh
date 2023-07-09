@@ -16,3 +16,6 @@ convert -resize 1920x "${tempimg}" "${tempimg}"
 
 # overlay image
 convert "${tempimg}" "$1" -gravity center -composite "${1%.*}_result.jpg"
+
+# remove temp image
+rm "${tempimg}"
