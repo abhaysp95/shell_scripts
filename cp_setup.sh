@@ -25,6 +25,10 @@ void solve() {
 }
 
 int32_t main(void) {
+	ios_base::sync_with_stdio(false);
+	cin.tie(nullptr);
+	cerr.tie(nullptr);
+
 	int T = nxt();
 	while (T--) {
 		solve();
