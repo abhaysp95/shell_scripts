@@ -14,7 +14,7 @@ using namespace std;
 	cout << "Line(" << __LINE__ << ") -> " << #v << " = " << (v) << endl;
 
 
-inline int nxt() {
+inline int nxt(istream& cin = std::cin) {
 	int x;
 	cin >> x;
 	return x;
@@ -28,6 +28,9 @@ int32_t main(void) {
 	ios_base::sync_with_stdio(false);
 	cin.tie(nullptr);
 	cerr.tie(nullptr);
+
+	/* ifstream fin("");
+	ofstream fout(""); */
 
 	int T = nxt();
 	while (T--) {
