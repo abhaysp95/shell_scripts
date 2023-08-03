@@ -7,6 +7,8 @@ cat << EOF | xclip -sel c
 using namespace std;
 
 #define sz(a) (int)(a.size())
+#define all(a) a.begin(), a.end()
+#define rall(a) a.rbegin(), a.rend()
 #define uint unsigned int
 #define ll long long
 #define ull unsigned long long
