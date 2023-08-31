@@ -13,7 +13,9 @@ using namespace std;
 #define ll long long
 #define ull unsigned long long
 #define dbg(v) \
-	cout << "Line(" << __LINE__ << ") -> " << #v << " = " << (v) << endl;
+	cout << "Line(" << __LINE__ << ") -> " << #v << " = " << (v) << endl
+#define dbg(v) \
+	cout << "Line(" << __LINE__ << ") -> " << #v << " = " << (v) << endl
 
 
 ifstream fin("");
@@ -30,9 +32,7 @@ void solve() {
 }
 
 int32_t main(void) {
-	ios_base::sync_with_stdio(false);
-	cin.tie(nullptr);
-	cerr.tie(nullptr);
+	FAST_IO;
 
 	int T = nxt();
 	while (T--) {
