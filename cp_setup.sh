@@ -12,8 +12,8 @@ using namespace std;
 #define uint unsigned int
 #define ll long long
 #define ull unsigned long long
-#define dbg(v) \
-	cout << "Line(" << __LINE__ << ") -> " << #v << " = " << (v) << endl
+#define FAST_IO \
+	ios_base::sync_with_stdio(false), cin.tie(nullptr), cerr.tie(nullptr)
 #define dbg(v) \
 	cout << "Line(" << __LINE__ << ") -> " << #v << " = " << (v) << endl
 
